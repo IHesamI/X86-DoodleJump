@@ -8,7 +8,8 @@ DATA segment para 'DATA'
     BALL_X DW 0A0h                       ; current X position (column) of the ball
 	BALL_Y DW 0A0h                       ; current Y position (column) of the ball 
     BALL_SIZE DW 04H                     ; size of the ball 
-    Ball_Velocity DW 04H
+    X_Ball_Velocity DW 04H
+    Y_Ball_Velocity DW 04H
 Data ends
 
 
@@ -31,7 +32,10 @@ code segment para 'CODE'
                 CMP DL,TIME_AUX
                 je CHECK_TIME
                 MOV TIME_AUX,DL
-                sub BALL_Y,Ball_Velocity
+                mov AX,Y_Ball_Velocity
+                sub BALL_Y,AX
+                MOV AX,X_Ball_Velocity
+                sub BALL_X,AX
                 CALL DRAW_BALL
                 JMP CHECK_TIME
 
