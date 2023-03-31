@@ -10,6 +10,9 @@ DATA segment para 'DATA'
     BALL_SIZE DW 04H                     ; size of the ball 
     X_Ball_Velocity DW 04H
     Y_Ball_Velocity DW 04H
+	ball_move_time dw  05h
+	overflow_flag dw 01h
+	
 Data ends
 
 
@@ -29,19 +32,45 @@ code segment para 'CODE'
             CHECK_TIME:
                 mov ah,2ch ; GET THE SYSTEM TIME
                 int 21h
-                CMP DL,TIME_AUX
+                CMP Dl,TIME_AUX
                 je CHECK_TIME
-                MOV TIME_AUX,DL
-                mov AX,Y_Ball_Velocity
-                sub BALL_Y,AX
-                MOV AX,X_Ball_Velocity
-                sub BALL_X,AX
-                CALL DRAW_BALL
+                MOV TIME_AUX,Dl
+				; add TIME_AUX,04h
+				inc bl
+				cmp bl ,5
+				jg ball_down
+				jng ball_up
                 JMP CHECK_TIME
-
             ret 
-
     main endp
+
+	Ball_up proc NEAR:
+        mov AX,Y_Ball_Velocity
+        sub BALL_Y,AX
+        ; MOV AX,X_Ball_Velocity
+        ; sub BALL_X,AX
+		CALL DRAW_BALL
+		jmp CHECK_TIME
+
+	Ball_up endp
+
+	Ball_down proc NEAR:
+
+        mov AX,Y_Ball_Velocity
+        add BALL_Y,AX
+        ; MOV AX,X_Ball_Velocity
+        ; add BALL_X,AX
+		CALL DRAW_BALL
+		cmp bl ,10
+		je counter_zero
+		jmp CHECK_TIME
+
+
+	Ball_down endp
+
+counter_zero :
+       mov bl , 0       
+       jmp CHECK_TIME
 
     DRAW_BALL PROC NEAR:
         ; mov ah ,7h
