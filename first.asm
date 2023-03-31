@@ -37,14 +37,17 @@ code segment para 'CODE'
                 MOV TIME_AUX,Dl
 				; add TIME_AUX,04h
 				inc bl
-				cmp bl ,5
-				jg ball_down
+				cmp bl ,5 ; Let the ball go up for 5 seconds
+				jg ball_down ; after 5 seconds go down
 				jng ball_up
                 JMP CHECK_TIME
             ret 
     main endp
 
 	Ball_up proc NEAR:
+
+		; TODO WHEN WE REACH CERTAIN HEIGHT THE CAMERA SHOULD MOVE
+		
         mov AX,Y_Ball_Velocity
         sub BALL_Y,AX
         ; MOV AX,X_Ball_Velocity
@@ -60,6 +63,8 @@ code segment para 'CODE'
         add BALL_Y,AX
         ; MOV AX,X_Ball_Velocity
         ; add BALL_X,AX
+		;TODO => IF IN THIS PROCESS WE HIT A STAGE 
+		;TODO => THIS POSITION SHOULD NEW BALL_Y AND THE TIME FOR DOWN MUST ENDS
 		CALL DRAW_BALL
 		cmp bl ,10
 		je counter_zero
