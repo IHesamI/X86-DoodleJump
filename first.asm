@@ -10,6 +10,13 @@ DATA segment para 'DATA'
     BALL_SIZE DW 04H                     ; size of the ball 
     X_Ball_Velocity DW 04H
     Y_Ball_Velocity DW 04H
+	
+	LAYER_X DW 0Ah
+	LAYER_Y DW 0Ah
+	randomNum_X DW 0
+	randomNum_Y DW 0
+	LAYER_WIDTH DW 0Ah
+	LAYER_HEIGHT DW 0Fh
 Data ends
 
 
@@ -36,14 +43,20 @@ code segment para 'CODE'
                 sub BALL_Y,AX
                 MOV AX,X_Ball_Velocity
                 sub BALL_X,AX
-                CALL DRAW_BALL
+                
+				CALL CLEAR_RCREEN
+				
+				CALL DRAW_BALL
+				
+				CALL DRAW_LAYAER
+				
                 JMP CHECK_TIME
 
             ret 
 
     main endp
 
-    DRAW_BALL PROC NEAR:
+    DRAW_BALL PROC NEAR
         ; mov ah ,7h
         ; int 10h
 
@@ -72,6 +85,98 @@ code segment para 'CODE'
         DRAW_BALL_VERTICAL:
         RET
     DRAW_BALL ENDP
+	
+	
+	
+	
+	DRAW_LAYAER PROC NEAR
+		
+		CALL GENERATE_X
+		MOV CX, randomNum_X ; set the layer x
+		CALL GENERATE_Y
+		MOV DX, randomNum_Y ; set the layer y
+		
+		DRAW_LAYAER_HORIZ:
+			MOV AH, 0Ch ; set configuration to pixel
+			MOV AL, 02h ; choose white as color 
+			MOV BH, 00h ; set the page number
+			INT 10h ; execute the configuration
+			INC CX ; cx = cx + 1
+			
+			
+			MOV AX, CX ; cx - BALL_X > BALL_SIZE -> go to the next line of the ball height pixles !!!!!!
+			SUB AX, LAYER_X
+			CMP AX, LAYER_HEIGHT
+			JNG DRAW_LAYAER_HORIZ
+			
+			
+			MOV CX, LAYER_X ; the cx reg goes back to the initial X
+			INC DX ; dx = dx + 1
+			
+			
+			MOV AX, DX ; dx - BALL_Y > BALL_SIZE -> exit the procedure
+			SUB AX, LAYER_Y
+			CMP AX, LAYER_WIDTH
+			JNG DRAW_LAYAER_HORIZ	
+		
+		
+	
+		RET
+		
+	DRAW_LAYAER ENDP
+	
+	GENERATE_X PROC NEAR
+    
+	MOV AH, 0h ; intterupt to get system time
+		INT 1Ah ; save clock ticks in DX
+		
+		MOV AX, DX
+		MOV DX, 0h
+		MOV BX, 010d 
+		DIV BX ; range the number between 0 to 9 dividing by 10
+		MOV AL, DL
+		MOV AH, 0
+		MOV BX, 0500d ; multiply the random number to screen X
+		MUL BX 
+		MOV DX, 0
+		
+		MOV randomNum_X, AX
+		
+		RET
+	GENERATE_X ENDP
+	
+	GENERATE_Y PROC NEAR
+    	
+		MOV AH, 0h ; intterupt to get system time
+		INT 1Ah ;save clock ticks in DX
+		
+		MOV AX, DX
+		MOV DX, 0h
+		MOV BX, 010d    
+		DIV BX ; range the number between 0 to 9 dividing by 10
+		MOV AL, DL
+		MOV AH, 0
+		MOV BX, 0200d ; multiply the random number to screen Y
+		MUL BX 
+		MOV DX, 0
+		
+		MOV randomNum_Y, AX
+		
+		RET
+	GENERATE_Y ENDP
+	
+	CLEAR_RCREEN PROC NEAR
+		MOV AH, 00h ; set the configuration to video mode 
+		MOV AL, 13h ; choose the video mode
+		INT 10h ; execute  the configuration
+		
+		MOV AH, 0Bh ; set the configuration
+		MOV BH, 00h ; to the background color
+		MOV BL, 00h ; set color to green
+		INT 10h ; execute the configuration
+		
+		RET
+	CLEAR_RCREEN ENDP
 
 code ends
 end
