@@ -50,6 +50,7 @@ code segment para 'CODE'
 		
         mov AX,Y_Ball_Velocity
         sub BALL_Y,AX
+        jmp Check_Position
         ; MOV AX,X_Ball_Velocity
         ; sub BALL_X,AX
 		CALL DRAW_BALL
@@ -57,12 +58,23 @@ code segment para 'CODE'
 
 	Ball_up endp
 
+    Check_Position proc near: 
+        ;  BALL_SIZE DW 04H                     ; size of the ball 
+
+
+    Check_Position endp
+
 	Ball_down proc NEAR:
+
+            ; BALL_X DW 0A0h                       ; current X position (column) of the ball
+        	; BALL_Y DW 0A0h                       ; current Y position (column) of the ball 
+
 
         mov AX,Y_Ball_Velocity
         add BALL_Y,AX
         ; MOV AX,X_Ball_Velocity
         ; add BALL_X,AX
+
 		;TODO => IF IN THIS PROCESS WE HIT A STAGE 
 		;TODO => THIS POSITION SHOULD NEW BALL_Y AND THE TIME FOR DOWN MUST ENDS
 		CALL DRAW_BALL
