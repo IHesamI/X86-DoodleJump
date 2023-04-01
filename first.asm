@@ -4,15 +4,21 @@ Stack SEGMENT PARA Stack
 Stack ends
 
 DATA segment para 'DATA'
+    
     TIME_AUX DB 0 ;
+    
     BALL_X DW 012h                       ; current X position (column) of the ball
 	BALL_Y DW 0A0h                       ; current Y position (column) of the ball 
     BALL_SIZE DW 04H                     ; size of the ball 
+    
     X_Ball_Velocity DW 04H
     Y_Ball_Velocity DW 04H
+    
     SCORE DW 0H
+    
     MAX_HEIGHT DW 0A0h
-	ball_move_time dw  05h
+	
+    ball_move_time dw  05h
 	overflow_flag dw 01h
 
     Initial_LAYER_X DW 010h 
@@ -48,7 +54,7 @@ code segment para 'CODE'
         mov ah ,0h
         int 10h            
 
-        CALL GENERATE_F
+        CALL GENERATE_F                 
 		MOV LY_F_X, AX
 		CALL GENERATE_F
 		MOV LY_F_Y, AX		
@@ -67,8 +73,8 @@ code segment para 'CODE'
                 ; pop bx
 				inc si
 				cmp si ,5 ; Let the ball go up for 5 seconds
-				jg ball_down ; after 5 seconds go down
-				jng ball_up
+				jg ball_down ; after 5 seconds go down and if no stage was in the way continue to fall
+				jng ball_up ; go up after hitting the stages
                 ; jmp ball_up
 
                 JMP CHECK_TIME
@@ -96,20 +102,21 @@ code segment para 'CODE'
     Check_Position proc near: 
         ;  BALL_SIZE DW 04H                     ; size of the ball 
         mov dx , BALL_Y
-        cmp dx , 09h               ;* IF Reach the end of the page reset the position of the ball     
+        cmp dx , 09h               ;* IF Reach the top of the page reset the position of the ball     
         jle Reset_Camera
         ; dec BALL_Y
         ret
 
     Check_Position endp
 
-    Reset_Camera proc near:
+    Reset_Camera proc near: 
         ; mov ax , 0A0H
         mov BALL_Y, 0A0H
         ret
     Reset_Camera ENDP
-    
-    CHECK_SCORE PROC near:
+
+
+    CHECK_SCORE PROC near: ;if the new Score reached this value will update
         mov bx , BALL_Y
         mov cx , MAX_HEIGHT
         CMP bx , cx
@@ -136,7 +143,7 @@ code segment para 'CODE'
         add BALL_Y,AX
         ; MOV AX,X_Ball_Velocity
         ; add BALL_X,AX
-        CALL HITTING_STAGES
+        CALL HITTING_STAGES ;check for hitting the stages and reset the move style
 		;TODO => IF IN THIS PROCESS WE HIT A STAGE 
 		;TODO => THIS POSITION SHOULD BE NEW BALL_Y AND THE TIME FOR DOWN MUST ENDS
 		CALL DRAW_BALL
@@ -146,13 +153,10 @@ code segment para 'CODE'
 
 	Ball_down endp
 
-; TODO 
-; !NEW 
+; ! this procecss is the responsible of hitting action[
 
 HITTING_STAGES PROC NEAR :
     HITTING_STAGES_y:
-
-
         mov cx,Initial_LAYER_X
         MOV Target_Layer_X , cx
 
@@ -165,11 +169,14 @@ HITTING_STAGES PROC NEAR :
         mov dx ,BALL_Y
         cmp cx , dx
         JE X_HIT_CHECKER
+    mov si ,6
+    ret
 
 
 HITTING_STAGES ENDP
 
 X_HIT_CHECKER PROC NEAR:
+    ; check if the x is in layer hit the layer and go up 
     MOV cx , TEMP_Ball_X_ 
     mov dx , Target_Layer_X
     add dx, LAYER_WIDTH
@@ -190,6 +197,7 @@ NOTHIT proc near:
     mov si ,6
     ret
 NOTHIT endp
+;!  ]
 
 counter_zero proc near :
        mov si , 0       
@@ -197,7 +205,7 @@ counter_zero proc near :
 
 counter_zero endp
 
-PRINT_SCORE proc near:
+PRINT_SCORE proc near: ;print Score
 
         mov bx, 000Fh
         mov     ah, 0eh
@@ -230,18 +238,13 @@ PRINT_SCORE proc near:
         int     10h
 
         CALL    DIVIDE_NUMBER_FOR_PRINT
-
-        ; mov bx, 000Fh
-        ; mov     ax, MAX_HEIGHT
-        ; mov     ah, 0eh
-        ; sub     al,0A0h
-        ; int     10h
-
     ret
+
 
 PRINT_SCORE endp
 
-DIVIDE_NUMBER_FOR_PRINT PROC NEAR:
+
+DIVIDE_NUMBER_FOR_PRINT PROC NEAR: ;print the score digit by digit
  ;mov bx, 000Fh
  MOV CX,0
  MOV BX,0AH        
