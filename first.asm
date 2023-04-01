@@ -14,6 +14,16 @@ DATA segment para 'DATA'
     MAX_HEIGHT DW 0A0h
 	ball_move_time dw  05h
 	overflow_flag dw 01h
+
+    LY_F_X DW 0Ah
+	LY_F_Y DW 090h
+	
+	LY_S_X DW 100h
+	LY_S_Y DW 030h
+
+    	
+	LAYER_WIDTH DW 030h
+	LAYER_HEIGHT DW 01h
 	
 Data ends
 
@@ -29,7 +39,16 @@ code segment para 'CODE'
         POP AX                               ;release the top item from the stack to the AX register
         POP AX                               ;release the top item from the stack to the AX register
         mov ah ,0h
-        int 10h                        
+        int 10h            
+
+        CALL GENERATE_F
+		MOV LY_F_X, AX
+		CALL GENERATE_F
+		MOV LY_F_Y, AX		
+		CALL GENERATE_F
+		MOV LY_S_X, AX
+		CALL GENERATE_S
+		MOV LY_S_Y, AX            
 
             CHECK_TIME:
                 mov ah,2ch ; GET THE SYSTEM TIME
@@ -44,7 +63,7 @@ code segment para 'CODE'
 				jg ball_down ; after 5 seconds go down
 				jng ball_up
                 ; jmp ball_up
-                
+
                 JMP CHECK_TIME
             ret 
     main endp
@@ -179,8 +198,9 @@ DIVIDE_NUMBER_FOR_PRINT PROC NEAR:
  MOV ax , MAX_HEIGHT 
  mov cx ,0A0h
  sub cx ,ax
- mov ax ,cx
+ mov ax ,cx ; AX= SCORE
  mov cx ,0
+ mov SCORE, ax
  DIVIDER:
      DIV BL    
      INC CX 
@@ -222,6 +242,49 @@ PRINT_IN_CONSOLE ENDP
         mov ah ,0h
         int 10h
         CALL PRINT_SCORE
+
+        		MOV CX, LY_F_X
+		MOV DX, LY_F_Y
+		
+		DRAW_LAYER_F:
+			MOV AH, 0Ch
+			MOV AL, 0Fh
+			MOV BH, 00h
+			INT 10h
+			INC CX
+            MOV AX, CX
+            SUB AX,LY_F_X
+            CMP AX,LAYER_WIDTH
+            JNG DRAW_LAYER_F
+			MOV cx , LY_F_X ;initial column 
+            INC DX
+            MOV AX, DX
+            SUB AX, LY_F_Y
+            CMP AX, LAYER_HEIGHT
+            JNG DRAW_LAYER_F
+			
+		MOV CX, LY_S_X
+		MOV DX, LY_S_Y
+		
+		DRAW_LAYER_S:
+			MOV AH, 0Ch
+			MOV AL, 0Fh
+			MOV BH, 00h
+			INT 10h
+			INC CX
+            MOV AX, CX
+            SUB AX,LY_S_X
+            CMP AX,LAYER_WIDTH
+            JNG DRAW_LAYER_S
+			MOV cx , LY_S_X ;initial column 
+            INC DX
+            MOV AX, DX
+            SUB AX, LY_S_Y
+            CMP AX, LAYER_HEIGHT
+            JNG DRAW_LAYER_S
+		
+
+
         mov cx , BALL_X ;initial column 
         mov dx , BALL_Y ;initial line
         DRAW_BALL_Horizontal:
@@ -244,6 +307,60 @@ PRINT_IN_CONSOLE ENDP
         DRAW_BALL_VERTICAL:
         RET
     DRAW_BALL ENDP
+
+	CLEAR_RCREEN PROC NEAR
+		MOV AH, 00h ; set the configuration to video mode 
+		MOV AL, 13h ; choose the video mode
+		INT 10h ; execute  the configuration
+		
+		MOV AH, 0Bh ; set the configuration
+		MOV BH, 00h ; to the background color
+		MOV BL, 00h ; set color to green
+		INT 10h ; execute the configuration
+		
+		RET
+	CLEAR_RCREEN ENDP
+	
+	
+	GENERATE_F PROC NEAR
+	
+		
+		MOV AH, 0h ; intterupt to get system time
+		INT 1Ah ; save clock ticks in DX
+			
+		MOV AX, DX
+		MOV DX, 0h
+		MOV BX, 010d 
+		DIV BX ; range the number between 0 to 9 dividing by 10
+		MOV AL, DL
+		MOV AH, 0
+		MOV BX, 032d ; multiply the random number to screen X
+		MUL BX 
+		ADD AX, 040d
+		MOV DX, 0
+		;MOV [SI], AX
+		RET
+	GENERATE_F ENDP 
+	
+	GENERATE_S PROC NEAR
+	
+		
+		MOV AH, 0h ; intterupt to get system time
+		INT 1Ah ; save clock ticks in DX
+			
+		MOV AX, DX
+		MOV DX, 0h
+		MOV BX, 010d 
+		DIV BX ; range the number between 0 to 9 dividing by 10
+		MOV AL, DL
+		MOV AH, 0
+		MOV BX, 032d ; multiply the random number to screen X
+		MUL BX 
+		ADD AX, 0288d
+		MOV DX, 0
+		;MOV [SI], AX
+		RET
+	GENERATE_S ENDP 
 
 code ends
 end
