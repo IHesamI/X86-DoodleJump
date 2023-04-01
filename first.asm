@@ -5,7 +5,7 @@ Stack ends
 
 DATA segment para 'DATA'
     TIME_AUX DB 0 ;
-    BALL_X DW 0A0h                       ; current X position (column) of the ball
+    BALL_X DW 012h                       ; current X position (column) of the ball
 	BALL_Y DW 0A0h                       ; current Y position (column) of the ball 
     BALL_SIZE DW 04H                     ; size of the ball 
     X_Ball_Velocity DW 04H
@@ -50,7 +50,7 @@ code segment para 'CODE'
 		
         mov AX,Y_Ball_Velocity
         sub BALL_Y,AX
-        jmp Check_Position
+        call Check_Position
         ; MOV AX,X_Ball_Velocity
         ; sub BALL_X,AX
 		CALL DRAW_BALL
@@ -60,9 +60,19 @@ code segment para 'CODE'
 
     Check_Position proc near: 
         ;  BALL_SIZE DW 04H                     ; size of the ball 
-
+        mov dx , BALL_Y
+        cmp dx , 09h
+        jle Reset_Camera
+        ; dec BALL_Y
+        ret
 
     Check_Position endp
+
+    Reset_Camera proc near:
+        ; mov ax , 0A0H
+        mov BALL_Y, 0A0H
+        ret
+    Reset_Camera ENDP
 
 	Ball_down proc NEAR:
 
@@ -85,9 +95,11 @@ code segment para 'CODE'
 
 	Ball_down endp
 
-counter_zero :
+counter_zero proc near :
        mov bl , 0       
        jmp CHECK_TIME
+
+counter_zero endp
 
     DRAW_BALL PROC NEAR:
         ; mov ah ,7h
