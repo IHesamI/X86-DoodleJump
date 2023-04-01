@@ -15,6 +15,9 @@ DATA segment para 'DATA'
 	ball_move_time dw  05h
 	overflow_flag dw 01h
 
+    Initial_LAYER_X DW 010h 
+    Initial_LAYER_Y DW 0A0h 
+
     LY_F_X DW 0Ah
 	LY_F_Y DW 090h
 	
@@ -24,6 +27,10 @@ DATA segment para 'DATA'
     	
 	LAYER_WIDTH DW 030h
 	LAYER_HEIGHT DW 01h
+
+    Target_Layer_X dw 00h
+    Target_Layer_Y dw 00h
+    TEMP_Ball_X_ dw 00h
 	
 Data ends
 
@@ -89,7 +96,7 @@ code segment para 'CODE'
     Check_Position proc near: 
         ;  BALL_SIZE DW 04H                     ; size of the ball 
         mov dx , BALL_Y
-        cmp dx , 09h
+        cmp dx , 09h               ;* IF Reach the end of the page reset the position of the ball     
         jle Reset_Camera
         ; dec BALL_Y
         ret
@@ -113,7 +120,7 @@ code segment para 'CODE'
     UPDATE_SCORE PROC NEAR:
         MOV MAX_HEIGHT,bx
         RET
-    UPDATE_SCORE ENDP:
+    UPDATE_SCORE ENDP
 
 
 ;! }
@@ -129,7 +136,7 @@ code segment para 'CODE'
         add BALL_Y,AX
         ; MOV AX,X_Ball_Velocity
         ; add BALL_X,AX
-
+        CALL HITTING_STAGES
 		;TODO => IF IN THIS PROCESS WE HIT A STAGE 
 		;TODO => THIS POSITION SHOULD BE NEW BALL_Y AND THE TIME FOR DOWN MUST ENDS
 		CALL DRAW_BALL
@@ -137,8 +144,52 @@ code segment para 'CODE'
 		je counter_zero
 		jmp CHECK_TIME
 
-
 	Ball_down endp
+
+; TODO 
+; !NEW 
+
+HITTING_STAGES PROC NEAR :
+    HITTING_STAGES_y:
+
+
+        mov cx,Initial_LAYER_X
+        MOV Target_Layer_X , cx
+
+        mov cx,BALL_X
+        MOV TEMP_Ball_X_ , cx
+
+        mov cx ,Initial_LAYER_Y
+        mov Target_Layer_Y,cx
+
+        mov dx ,BALL_Y
+        cmp cx , dx
+        JE X_HIT_CHECKER
+
+
+HITTING_STAGES ENDP
+
+X_HIT_CHECKER PROC NEAR:
+    MOV cx , TEMP_Ball_X_ 
+    mov dx , Target_Layer_X
+    add dx, LAYER_WIDTH
+    CMP cx,dx
+    jg NOTHIT
+    add cx , BALL_SIZE
+    mov dx , Target_Layer_X
+    CMP cx,dx
+    jl NOTHIT
+    mov si ,10
+    mov cx,Target_Layer_Y
+    mov BALL_Y,cx
+    ret
+
+X_HIT_CHECKER ENDP
+
+NOTHIT proc near:
+    mov si ,6
+    ret
+NOTHIT endp
 
 counter_zero proc near :
        mov si , 0       
@@ -243,7 +294,30 @@ PRINT_IN_CONSOLE ENDP
         int 10h
         CALL PRINT_SCORE
 
-        		MOV CX, LY_F_X
+
+        MOV CX, Initial_LAYER_X 
+		MOV DX, Initial_LAYER_Y 
+        DEC DX
+		
+		Initial_LAYER:
+			MOV AH, 0Ch
+			MOV AL, 0Fh
+			MOV BH, 00h
+			INT 10h
+			INC CX
+            MOV AX, CX
+            SUB AX,LY_F_X
+            CMP AX,LAYER_WIDTH
+            JNG Initial_LAYER
+			MOV cx , LY_F_X ;initial column 
+            INC DX
+            MOV AX, DX
+            SUB AX, LY_F_Y
+            CMP AX, LAYER_HEIGHT
+            JNG Initial_LAYER
+
+
+        MOV CX, LY_F_X
 		MOV DX, LY_F_Y
 		
 		DRAW_LAYER_F:
@@ -308,18 +382,18 @@ PRINT_IN_CONSOLE ENDP
         RET
     DRAW_BALL ENDP
 
-	CLEAR_RCREEN PROC NEAR
-		MOV AH, 00h ; set the configuration to video mode 
-		MOV AL, 13h ; choose the video mode
-		INT 10h ; execute  the configuration
+	; CLEAR_RCREEN PROC NEAR
+	; 	MOV AH, 00h ; set the configuration to video mode 
+	; 	MOV AL, 13h ; choose the video mode
+	; 	INT 10h ; execute  the configuration
 		
-		MOV AH, 0Bh ; set the configuration
-		MOV BH, 00h ; to the background color
-		MOV BL, 00h ; set color to green
-		INT 10h ; execute the configuration
+	; 	MOV AH, 0Bh ; set the configuration
+	; 	MOV BH, 00h ; to the background color
+	; 	MOV BL, 00h ; set color to green
+	; 	INT 10h ; execute the configuration
 		
-		RET
-	CLEAR_RCREEN ENDP
+	; 	RET
+	; CLEAR_RCREEN ENDP
 	
 	
 	GENERATE_F PROC NEAR
