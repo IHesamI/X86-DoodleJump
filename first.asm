@@ -446,7 +446,6 @@ PRINT_IN_CONSOLE ENDP
         RET
     DRAW_BALL ENDP
 
-	
 	GENERATE_F_X PROC NEAR
 	
 		
@@ -459,9 +458,9 @@ PRINT_IN_CONSOLE ENDP
 		DIV BX ; range the number between 0 to 9 dividing by 10
 		MOV AL, DL
 		MOV AH, 0
-		MOV BX, 0Ah ; multiply the random number to screen X
+		MOV BX, 010d ; multiply the random number to screen X
 		MUL BX 
-		ADD AX, 05h
+		ADD AX, 05d
 		MOV DX, 0
 		;MOV [SI], AX
 		RET
@@ -479,7 +478,7 @@ PRINT_IN_CONSOLE ENDP
 		DIV BX ; range the number between 0 to 9 dividing by 10
 		MOV AL, DL
 		MOV AH, 0
-		MOV BX, 001d ; multiply the random number to screen X
+		MOV BX, 002d ; multiply the random number to screen X
 		MUL BX 
 		ADD AX, 0140d
 		MOV DX, 0
@@ -498,7 +497,7 @@ PRINT_IN_CONSOLE ENDP
 		DIV BX ; range the number between 0 to 9 dividing by 10
 		MOV AL, DL
 		MOV AH, 0
-		MOV BX, 01h ; multiply the random number to screen X
+		MOV BX, 05d ; multiply the random number to screen X
 		MUL BX 
 		ADD AX, 0C8h
 		MOV DX, 0
