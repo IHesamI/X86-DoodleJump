@@ -7,7 +7,7 @@ DATA segment para 'DATA'
     
     TIME_AUX DB 0 ;
     
-    BALL_X DW 012h                       ; current X position (column) of the ball
+    BALL_X DW 0A0h                       ; current X position (column) of the ball
 	BALL_Y DW 0A0h                       ; current Y position (column) of the ball 
     BALL_SIZE DW 04H                     ; size of the ball 
     
@@ -21,7 +21,7 @@ DATA segment para 'DATA'
     ball_move_time dw  05h
 	overflow_flag dw 01h
 
-    Initial_LAYER_X DW 010h 
+    Initial_LAYER_X DW 0A0h 
     Initial_LAYER_Y DW 0A0h 
 
     LY_F_X DW 0Ah
@@ -88,9 +88,9 @@ code segment para 'CODE'
 		
         mov AX,Y_Ball_Velocity
         sub BALL_Y,AX
-        
-        call CHECK_SCORE
-        
+        call KEYBOARD_CHECKER
+
+        call CHECK_SCORE        
         call Check_Position
         ; MOV AX,X_Ball_Velocity
         ; sub BALL_X,AX
@@ -141,8 +141,7 @@ code segment para 'CODE'
 
         mov AX,Y_Ball_Velocity
         add BALL_Y,AX
-        ; MOV AX,X_Ball_Velocity
-        ; add BALL_X,AX
+        call KEYBOARD_CHECKER
         CALL HITTING_STAGES ;check for hitting the stages and reset the move style
 		;TODO => IF IN THIS PROCESS WE HIT A STAGE 
 		;TODO => THIS POSITION SHOULD BE NEW BALL_Y AND THE TIME FOR DOWN MUST ENDS
@@ -198,6 +197,39 @@ NOTHIT proc near:
     ret
 NOTHIT endp
 ;!  ]
+
+KEYBOARD_CHECKER PROC NEAR :
+    mov ah ,0h
+    int 10h
+    
+    mov ah,01h
+    int 16h
+    jz Exit_Keyboard   
+    mov ah ,00h
+    int 16h
+    CMP AH,04BH
+    JE GO_LEFT
+    CMP AH , 04DH
+    JE GO_RIGHT
+                   
+                   ; 4B left Arrow
+                   ; 4D Right Arrow
+    Exit_Keyboard:
+        RET
+    ret
+KEYBOARD_CHECKER ENDP
+
+GO_LEFT PROC NEAR:     
+    sub BALL_X,04H   
+    RET
+GO_LEFT ENDP             
+               
+GO_RIGHT PROC NEAR:
+    add BALL_X,04H   
+    RET
+GO_RIGHT ENDP
+
+
 
 counter_zero proc near :
        mov si , 0       
