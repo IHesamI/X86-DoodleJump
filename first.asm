@@ -21,8 +21,12 @@ DATA segment para 'DATA'
     ball_move_time dw  05h
 	overflow_flag dw 01h
 
+    Enemy_X DW 080h
+    Enemy_Y DW 0A0h
+    Enemy_SIZE DW 05H                     ;
+
     Initial_LAYER_X DW 0A0h 
-    Initial_LAYER_Y DW 0A0h 
+    Initial_LAYER_Y DW 0B0h 
 	Initial_LAYER_WIDTH DW 018h
 
     LY_F_X DW 0Ah
@@ -73,7 +77,7 @@ code segment para 'CODE'
 				; add TIME_AUX,04h
                 ; pop bx
 				inc si
-				cmp si ,5 ; Let the ball go up for 5 seconds
+				cmp si ,10 ; Let the ball go up for 5 seconds
 				jg ball_down ; after 5 seconds go down and if no stage was in the way continue to fall
 				jng ball_up ; go up after hitting the stages
                 ; jmp ball_up
@@ -147,7 +151,7 @@ code segment para 'CODE'
 		;TODO => IF IN THIS PROCESS WE HIT A STAGE 
 		;TODO => THIS POSITION SHOULD BE NEW BALL_Y AND THE TIME FOR DOWN MUST ENDS
 		CALL DRAW_BALL
-		cmp si ,10
+		cmp si ,15
 		je counter_zero
 		jmp CHECK_TIME
 
@@ -169,7 +173,7 @@ HITTING_STAGES PROC NEAR :
         mov dx ,BALL_Y
         cmp cx , dx
         JE X_HIT_CHECKER
-    mov si ,6
+    mov si ,11
     ret
 
 
@@ -186,7 +190,7 @@ X_HIT_CHECKER PROC NEAR:
     mov dx , Target_Layer_X
     CMP cx,dx
     jl NOTHIT
-    mov si ,10
+    mov si ,15
     mov cx,Target_Layer_Y
     mov BALL_Y,cx
     ret
@@ -194,7 +198,7 @@ X_HIT_CHECKER PROC NEAR:
 X_HIT_CHECKER ENDP
 
 NOTHIT proc near:
-    mov si ,6
+    mov si ,11
     ret
 NOTHIT endp
 ;!  ]
@@ -331,6 +335,27 @@ PRINT_IN_CONSOLE ENDP
         CALL PRINT_SCORE
 
 
+        MOV CX, Enemy_X 
+		MOV DX, Enemy_Y 
+		
+		Enemy_Draw:
+			MOV AH, 0Ch
+			MOV AL, 0fh
+			MOV BH, 00h
+			INT 10h
+			INC CX
+            MOV AX, CX
+            SUB AX,Enemy_X
+            CMP AX,Enemy_SIZE
+            JNG Enemy_Draw
+			MOV cx , Enemy_X ;initial column 
+            INC DX
+            MOV AX, DX
+            SUB AX, Enemy_Y
+            CMP AX, Enemy_SIZE
+            JNG Enemy_Draw
+
+
         MOV CX, Initial_LAYER_X 
 		MOV DX, Initial_LAYER_Y 
         DEC DX
@@ -351,6 +376,8 @@ PRINT_IN_CONSOLE ENDP
             SUB AX, Initial_LAYER_Y
             CMP AX, LAYER_HEIGHT
             JNG Initial_LAYER
+
+        
 
 
         MOV CX, LY_F_X
@@ -400,7 +427,7 @@ PRINT_IN_CONSOLE ENDP
         DRAW_BALL_Horizontal:
             mov ah , 0Ch
             mov al , 02h ; Set the color of pixel
-            mov bh , 00h
+            mov bh , 01eh
             int 10h
             inc cx
             MOV ax, cx
