@@ -23,10 +23,9 @@ DATA segment para 'DATA'
 
     Enemy_X DW 080h
     Enemy_Y DW 0A0h
-    Enemy_SIZE DW 05H                     ;
+    Enemy_SIZE DW 05H                     
 
     Initial_LAYER_X DW 0A0h 
-    ; Initial_LAYER_Y DW 0C8h ; end of the window 
     Initial_LAYER_Y DW 0A0h 
 	Initial_LAYER_WIDTH DW 018h
 
@@ -143,10 +142,9 @@ code segment para 'CODE'
 
             ; BALL_X DW 0A0h                       ; current X position (column) of the ball
         	; BALL_Y DW 0A0h                       ; current Y position (column) of the ball 
-
-
         mov AX,Y_Ball_Velocity
         add BALL_Y,AX
+        Call GAME_OVER
         call KEYBOARD_CHECKER
         CALL HITTING_STAGES ;check for hitting the stages and reset the move style
 		;TODO => IF IN THIS PROCESS WE HIT A STAGE 
@@ -158,10 +156,18 @@ code segment para 'CODE'
 
 	Ball_down endp
 
+counter_zero proc near :
+       mov si , 0       
+       jmp CHECK_TIME
+
+counter_zero endp
+
+
 ; ! this procecss is the responsible of hitting action[
 
 HITTING_STAGES PROC NEAR :
-    HITTING_STAGES_y:
+    
+        ; check Initial_LAYER
         mov cx,Initial_LAYER_X
         MOV Target_Layer_X , cx ; if the y of the ball and the layer is same we should check for x and need to store them in a temporarily variable
 
@@ -174,10 +180,39 @@ HITTING_STAGES PROC NEAR :
         mov dx ,BALL_Y
         cmp cx , dx
         JE X_HIT_CHECKER
+        
+	
+        ; check layer_F
+        mov cx,LY_F_X
+        MOV Target_Layer_X , cx ; if the y of the ball and the layer is same we should check for x and need to store them in a temporarily variable
+
+        mov cx,BALL_X
+        MOV TEMP_Ball_X_ , cx
+
+        mov cx ,LY_F_Y
+        mov Target_Layer_Y,cx
+
+        mov dx ,BALL_Y
+        cmp cx , dx
+        JE X_HIT_CHECKER
+
+    	
+        ; check layer_S
+        mov cx,LY_S_X
+        MOV Target_Layer_X , cx ; if the y of the ball and the layer is same we should check for x and need to store them in a temporarily variable
+
+        mov cx,BALL_X
+        MOV TEMP_Ball_X_ , cx
+
+        mov cx ,LY_S_Y
+        mov Target_Layer_Y,cx
+
+        mov dx ,BALL_Y
+        cmp cx , dx
+        JE X_HIT_CHECKER
+
     mov si ,11
     ret
-
-
 HITTING_STAGES ENDP
 
 X_HIT_CHECKER PROC NEAR:
@@ -237,11 +272,6 @@ GO_RIGHT ENDP
 
 
 
-counter_zero proc near :
-       mov si , 0       
-       jmp CHECK_TIME
-
-counter_zero endp
 
 PRINT_SCORE proc near: ;print Score
 
@@ -280,6 +310,20 @@ PRINT_SCORE proc near: ;print Score
 
 
 PRINT_SCORE endp
+
+GAME_OVER proc near:
+
+        mov bx, BALL_Y
+        cmp bx,0C8h
+        jge EndGame
+        ret
+    
+    GAME_OVER endp
+
+    EndGame proc near:
+        mov ah , 4ch
+        int 21h
+    EndGame endp
 
 
 DIVIDE_NUMBER_FOR_PRINT PROC NEAR: ;print the score digit by digit
@@ -504,7 +548,6 @@ PRINT_IN_CONSOLE ENDP
 		;MOV [SI], AX
 		RET
 	GENERATE_S_X ENDP 
-	
 	GENERATE_S_Y PROC NEAR
 	
 		
