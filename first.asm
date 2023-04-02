@@ -26,7 +26,8 @@ DATA segment para 'DATA'
     Enemy_SIZE DW 05H                     ;
 
     Initial_LAYER_X DW 0A0h 
-    Initial_LAYER_Y DW 0B0h 
+    ; Initial_LAYER_Y DW 0C8h ; end of the window 
+    Initial_LAYER_Y DW 0A0h 
 	Initial_LAYER_WIDTH DW 018h
 
     LY_F_X DW 0Ah
@@ -162,7 +163,7 @@ code segment para 'CODE'
 HITTING_STAGES PROC NEAR :
     HITTING_STAGES_y:
         mov cx,Initial_LAYER_X
-        MOV Target_Layer_X , cx
+        MOV Target_Layer_X , cx ; if the y of the ball and the layer is same we should check for x and need to store them in a temporarily variable
 
         mov cx,BALL_X
         MOV TEMP_Ball_X_ , cx
