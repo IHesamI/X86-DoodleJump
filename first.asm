@@ -25,7 +25,7 @@ DATA segment para 'DATA'
     Enemy_SIZE DW 05H                     
 
     Initial_LAYER_X DW 0A0h 
-    Initial_LAYER_Y DW 099h 
+    Initial_LAYER_Y DW 0A0h 
 	Initial_LAYER_WIDTH DW 018h
 
     LY_F_X DW 0Ah
@@ -59,13 +59,12 @@ code segment para 'CODE'
         int 10h            
         ; TODO THIS MOV INSTRUCTIONS MUST GO INSIDE EACH PROCESS
         CALL GENERATE_F_X                
-		MOV LY_F_X, AX
+		
 		CALL GENERATE_F_Y
-		MOV LY_F_Y, AX		
+			
 		CALL GENERATE_S_X
-		MOV LY_S_X, AX
+		
 		CALL GENERATE_S_Y
-		MOV LY_S_Y, AX            
 
             CHECK_TIME:
                 mov ah,2ch ; GET THE SYSTEM TIME
@@ -73,12 +72,10 @@ code segment para 'CODE'
                 CMP Dl,TIME_AUX
                 je CHECK_TIME
                 MOV TIME_AUX,Dl
-				; add TIME_AUX,04h
-                ; pop bx
 				inc si
 				cmp si ,10 ; Let the ball go up for 5 seconds
 				jg ball_down ; after 5 seconds go down and if no stage was in the way continue to fall
-				jng ball_up ; go up after hitting the stages
+				jng ball_up ; go up after hitting the stages => 
                 ; jmp ball_up
 
                 JMP CHECK_TIME
@@ -211,15 +208,9 @@ HITTING_STAGES PROC NEAR :
         mov Target_Layer_Y,cx
 
         mov dx ,BALL_Y
-        ; sub cx,dx
-        ; mov ax,cx
-        ; mov bx,0
-        ; mov bl,4
-        ; div bl
-        ; cmp al ,0
-
         sub cx,dx
-        cmp cx,4
+        cmp cx,03h
+
         JlE X_HIT_CHECKER
         
 	
@@ -234,8 +225,9 @@ HITTING_STAGES PROC NEAR :
         mov Target_Layer_Y,cx
 
         mov dx ,BALL_Y
-        cmp cx , dx
-        JE X_HIT_CHECKER
+        sub cx,dx
+        cmp cx,03h
+        JlE X_HIT_CHECKER
 
     	
         ; check layer_S
@@ -249,10 +241,11 @@ HITTING_STAGES PROC NEAR :
         mov Target_Layer_Y,cx
 
         mov dx ,BALL_Y
-        cmp cx , dx
-        JE X_HIT_CHECKER
+        sub cx,dx
+        cmp cx,03h
+        JlE X_HIT_CHECKER
 
-    mov si ,11
+    mov si ,16
     ret
 HITTING_STAGES ENDP
 
@@ -375,7 +368,7 @@ GAME_OVER proc near:
 DIVIDE_NUMBER_FOR_PRINT PROC NEAR: ;print the score digit by digit
  ;mov bx, 000Fh
  MOV CX,0
- MOV BX,0AH        
+ MOV BX,0AH        ;bx=10 for dividing
  
  MOV ax , MAX_HEIGHT 
  mov cx ,0A0h
@@ -552,7 +545,8 @@ PRINT_IN_CONSOLE ENDP
 		MUL BX 
 		ADD AX, 100d
 		MOV DX, 0
-		;MOV [SI], AX
+        MOV LY_F_X, AX
+
 		RET
 	GENERATE_F_X ENDP 
 	
@@ -572,7 +566,8 @@ PRINT_IN_CONSOLE ENDP
 		MUL BX 
 		ADD AX, 120d
 		MOV DX, 0
-		;MOV [SI], AX
+        MOV LY_F_Y, AX	
+
 		RET
 	GENERATE_F_Y ENDP
 	GENERATE_S_X PROC NEAR
@@ -591,12 +586,11 @@ PRINT_IN_CONSOLE ENDP
 		MUL BX 
 		ADD AX, 150d
 		MOV DX, 0
-		;MOV [SI], AX
+
+        MOV LY_S_X, AX
 		RET
 	GENERATE_S_X ENDP 
 	GENERATE_S_Y PROC NEAR
-	
-		
 		MOV AH, 0h ; intterupt to get system time
 		INT 1Ah ; save clock ticks in DX
 			
@@ -610,7 +604,7 @@ PRINT_IN_CONSOLE ENDP
 		MUL BX 
 		ADD AX, 100d
 		MOV DX, 0
-		;MOV [SI], AX
+	    MOV LY_S_Y, AX            
 		RET
 	GENERATE_S_Y ENDP 
 	
