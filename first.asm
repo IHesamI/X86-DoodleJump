@@ -11,7 +11,6 @@ DATA segment para 'DATA'
 	BALL_Y DW 0A0h                       ; current Y position (column) of the ball 
     BALL_SIZE DW 04H                     ; size of the ball 
     
-    X_Ball_Velocity DW 04H
     Y_Ball_Velocity DW 04H
     
     SCORE DW 0H
@@ -21,12 +20,12 @@ DATA segment para 'DATA'
     ball_move_time dw  05h
 	overflow_flag dw 01h
 
-    Enemy_X DW 080h
+    Enemy_X DW 090h
     Enemy_Y DW 0A0h
     Enemy_SIZE DW 05H                     
 
     Initial_LAYER_X DW 0A0h 
-    Initial_LAYER_Y DW 0A0h 
+    Initial_LAYER_Y DW 098h 
 	Initial_LAYER_WIDTH DW 018h
 
     LY_F_X DW 0Ah
@@ -94,11 +93,9 @@ code segment para 'CODE'
         mov AX,Y_Ball_Velocity
         sub BALL_Y,AX
         call KEYBOARD_CHECKER
-
+        CALL ENEMY_HITTING
         call CHECK_SCORE        
         call Check_Position
-        ; MOV AX,X_Ball_Velocity
-        ; sub BALL_X,AX
 		CALL DRAW_BALL
 		jmp CHECK_TIME
 
@@ -146,6 +143,7 @@ code segment para 'CODE'
         add BALL_Y,AX
         Call GAME_OVER
         call KEYBOARD_CHECKER
+        CALL ENEMY_HITTING
         CALL HITTING_STAGES ;check for hitting the stages and reset the move style
 		;TODO => IF IN THIS PROCESS WE HIT A STAGE 
 		;TODO => THIS POSITION SHOULD BE NEW BALL_Y AND THE TIME FOR DOWN MUST ENDS
@@ -162,6 +160,40 @@ counter_zero proc near :
 
 counter_zero endp
 
+ENEMY_HITTING PROC NEAR:
+
+        mov cx,Enemy_X
+        MOV Target_Layer_X , cx ; if the y of the ball and the layer is same we should check for x and need to store them in a temporarily variable
+
+        mov cx,BALL_X
+        MOV TEMP_Ball_X_ , cx
+
+        mov cx ,Enemy_Y
+        mov Target_Layer_Y,cx
+
+        mov dx ,BALL_Y
+        cmp cx , dx
+        JE X_HIT_CHECKER_ENEMY
+        RET
+
+        X_HIT_CHECKER_ENEMY:
+        ; check if the x is in layer hit the layer and go up 
+            MOV cx , TEMP_Ball_X_ 
+            mov dx , Target_Layer_X
+            add dx, Enemy_SIZE
+            CMP cx,dx
+            jg ENEMY_NOTHIT
+            add cx , BALL_SIZE
+            mov dx , Target_Layer_X
+            CMP cx,dx
+            jl ENEMY_NOTHIT
+            JMP EndGame
+
+ENEMY_HITTING ENDP
+
+ENEMY_NOTHIT PROC NEAR:
+    RET
+ENEMY_NOTHIT ENDP
 
 ; ! this procecss is the responsible of hitting action[
 
@@ -274,6 +306,11 @@ GO_RIGHT ENDP
 
 
 PRINT_SCORE proc near: ;print Score
+
+        ; mov dx, 0f28h
+        ; mov bh, 0      ; Page=0
+        ; mov ah, 02h    ; BIOS.SetCursorPosition
+        ; int 10h
 
         mov bx, 000Fh
         mov     ah, 0eh
