@@ -549,9 +549,9 @@ PRINT_IN_CONSOLE ENDP
 		DIV BX ; range the number between 0 to 9 dividing by 10
 		MOV AL, DL
 		MOV AH, 0
-		MOV BX, 010d ; multiply the random number to screen X
+		MOV BX, 02d ; multiply the random number to screen X
 		MUL BX 
-		ADD AX, 05d
+		ADD AX, 100d
 		MOV DX, 0
 		;MOV [SI], AX
 		RET
@@ -569,9 +569,9 @@ PRINT_IN_CONSOLE ENDP
 		DIV BX ; range the number between 0 to 9 dividing by 10
 		MOV AL, DL
 		MOV AH, 0
-		MOV BX, 002d ; multiply the random number to screen X
+		MOV BX, 03d ; multiply the random number to screen X
 		MUL BX 
-		ADD AX, 0140d
+		ADD AX, 120d
 		MOV DX, 0
 		;MOV [SI], AX
 		RET
@@ -590,7 +590,7 @@ PRINT_IN_CONSOLE ENDP
 		MOV AH, 0
 		MOV BX, 05d ; multiply the random number to screen X
 		MUL BX 
-		ADD AX, 0C8h
+		ADD AX, 150d
 		MOV DX, 0
 		;MOV [SI], AX
 		RET
@@ -607,9 +607,9 @@ PRINT_IN_CONSOLE ENDP
 		DIV BX ; range the number between 0 to 9 dividing by 10
 		MOV AL, DL
 		MOV AH, 0
-		MOV BX, 01d ; multiply the random number to screen X
+		MOV BX, 3d ; multiply the random number to screen X
 		MUL BX 
-		ADD AX, 0120d
+		ADD AX, 100d
 		MOV DX, 0
 		;MOV [SI], AX
 		RET
