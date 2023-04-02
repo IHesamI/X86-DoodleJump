@@ -25,7 +25,7 @@ DATA segment para 'DATA'
     Enemy_SIZE DW 05H                     
 
     Initial_LAYER_X DW 0A0h 
-    Initial_LAYER_Y DW 098h 
+    Initial_LAYER_Y DW 099h 
 	Initial_LAYER_WIDTH DW 018h
 
     LY_F_X DW 0Ah
@@ -57,7 +57,7 @@ code segment para 'CODE'
         POP AX                               ;release the top item from the stack to the AX register
         mov ah ,0h
         int 10h            
-
+        ; TODO THIS MOV INSTRUCTIONS MUST GO INSIDE EACH PROCESS
         CALL GENERATE_F_X                
 		MOV LY_F_X, AX
 		CALL GENERATE_F_Y
@@ -210,8 +210,16 @@ HITTING_STAGES PROC NEAR :
         mov Target_Layer_Y,cx
 
         mov dx ,BALL_Y
-        cmp cx , dx
-        JE X_HIT_CHECKER
+        ; sub cx,dx
+        ; mov ax,cx
+        ; mov bx,0
+        ; mov bl,4
+        ; div bl
+        ; cmp al ,0
+
+        sub cx,dx
+        cmp cx,4
+        JlE X_HIT_CHECKER
         
 	
         ; check layer_F
@@ -225,8 +233,9 @@ HITTING_STAGES PROC NEAR :
         mov Target_Layer_Y,cx
 
         mov dx ,BALL_Y
-        cmp cx , dx
-        JE X_HIT_CHECKER
+        sub cx,dx
+        cmp cx,4
+        JlE X_HIT_CHECKER
 
     	
         ; check layer_S
@@ -240,8 +249,9 @@ HITTING_STAGES PROC NEAR :
         mov Target_Layer_Y,cx
 
         mov dx ,BALL_Y
-        cmp cx , dx
-        JE X_HIT_CHECKER
+        sub cx,dx
+        cmp cx,4
+        JlE X_HIT_CHECKER
 
     mov si ,11
     ret
