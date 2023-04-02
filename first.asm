@@ -59,13 +59,13 @@ code segment para 'CODE'
         mov ah ,0h
         int 10h            
 
-        CALL GENERATE_F                 
+        CALL GENERATE_F_X                
 		MOV LY_F_X, AX
-		CALL GENERATE_F
+		CALL GENERATE_F_Y
 		MOV LY_F_Y, AX		
-		CALL GENERATE_F
+		CALL GENERATE_S_X
 		MOV LY_S_X, AX
-		CALL GENERATE_S
+		CALL GENERATE_S_Y
 		MOV LY_S_Y, AX            
 
             CHECK_TIME:
@@ -446,7 +446,7 @@ PRINT_IN_CONSOLE ENDP
     DRAW_BALL ENDP
 
 	
-	GENERATE_F PROC NEAR
+	GENERATE_F_X PROC NEAR
 	
 		
 		MOV AH, 0h ; intterupt to get system time
@@ -458,15 +458,15 @@ PRINT_IN_CONSOLE ENDP
 		DIV BX ; range the number between 0 to 9 dividing by 10
 		MOV AL, DL
 		MOV AH, 0
-		MOV BX, 032d ; multiply the random number to screen X
+		MOV BX, 0Ah ; multiply the random number to screen X
 		MUL BX 
-		ADD AX, 040d
+		ADD AX, 05h
 		MOV DX, 0
 		;MOV [SI], AX
 		RET
-	GENERATE_F ENDP 
+	GENERATE_F_X ENDP 
 	
-	GENERATE_S PROC NEAR
+	GENERATE_F_Y PROC NEAR
 	
 		
 		MOV AH, 0h ; intterupt to get system time
@@ -478,13 +478,54 @@ PRINT_IN_CONSOLE ENDP
 		DIV BX ; range the number between 0 to 9 dividing by 10
 		MOV AL, DL
 		MOV AH, 0
-		MOV BX, 032d ; multiply the random number to screen X
+		MOV BX, 001d ; multiply the random number to screen X
 		MUL BX 
-		ADD AX, 0288d
+		ADD AX, 0140d
 		MOV DX, 0
 		;MOV [SI], AX
 		RET
-	GENERATE_S ENDP 
+	GENERATE_F_Y ENDP
+	GENERATE_S_X PROC NEAR
+	
+		
+		MOV AH, 0h ; intterupt to get system time
+		INT 1Ah ; save clock ticks in DX
+			
+		MOV AX, DX
+		MOV DX, 0h
+		MOV BX, 010d 
+		DIV BX ; range the number between 0 to 9 dividing by 10
+		MOV AL, DL
+		MOV AH, 0
+		MOV BX, 01h ; multiply the random number to screen X
+		MUL BX 
+		ADD AX, 0C8h
+		MOV DX, 0
+		;MOV [SI], AX
+		RET
+	GENERATE_S_X ENDP 
+	
+	GENERATE_S_Y PROC NEAR
+	
+		
+		MOV AH, 0h ; intterupt to get system time
+		INT 1Ah ; save clock ticks in DX
+			
+		MOV AX, DX
+		MOV DX, 0h
+		MOV BX, 010d 
+		DIV BX ; range the number between 0 to 9 dividing by 10
+		MOV AL, DL
+		MOV AH, 0
+		MOV BX, 01d ; multiply the random number to screen X
+		MUL BX 
+		ADD AX, 0120d
+		MOV DX, 0
+		;MOV [SI], AX
+		RET
+	GENERATE_S_Y ENDP 
+	
+ 
 
 code ends
 end
