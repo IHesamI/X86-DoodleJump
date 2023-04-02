@@ -23,6 +23,7 @@ DATA segment para 'DATA'
 
     Initial_LAYER_X DW 0A0h 
     Initial_LAYER_Y DW 0A0h 
+	Initial_LAYER_WIDTH DW 018h
 
     LY_F_X DW 0Ah
 	LY_F_Y DW 090h
@@ -341,13 +342,13 @@ PRINT_IN_CONSOLE ENDP
 			INT 10h
 			INC CX
             MOV AX, CX
-            SUB AX,LY_F_X
+            SUB AX,Initial_LAYER_X
             CMP AX,LAYER_WIDTH
             JNG Initial_LAYER
-			MOV cx , LY_F_X ;initial column 
+			MOV cx , Initial_LAYER_X ;initial column 
             INC DX
             MOV AX, DX
-            SUB AX, LY_F_Y
+            SUB AX, Initial_LAYER_Y
             CMP AX, LAYER_HEIGHT
             JNG Initial_LAYER
 
@@ -417,19 +418,6 @@ PRINT_IN_CONSOLE ENDP
         RET
     DRAW_BALL ENDP
 
-	; CLEAR_RCREEN PROC NEAR
-	; 	MOV AH, 00h ; set the configuration to video mode 
-	; 	MOV AL, 13h ; choose the video mode
-	; 	INT 10h ; execute  the configuration
-		
-	; 	MOV AH, 0Bh ; set the configuration
-	; 	MOV BH, 00h ; to the background color
-	; 	MOV BL, 00h ; set color to green
-	; 	INT 10h ; execute the configuration
-		
-	; 	RET
-	; CLEAR_RCREEN ENDP
-	
 	
 	GENERATE_F PROC NEAR
 	
