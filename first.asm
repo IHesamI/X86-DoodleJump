@@ -172,8 +172,9 @@ ENEMY_HITTING PROC NEAR:
         mov Target_Layer_Y,cx
 
         mov dx ,BALL_Y
-        cmp cx , dx
-        JE X_HIT_CHECKER_ENEMY
+        sub cx , dx
+        cmp cx , 4
+        JlE X_HIT_CHECKER_ENEMY
         RET
 
         X_HIT_CHECKER_ENEMY:
@@ -233,9 +234,8 @@ HITTING_STAGES PROC NEAR :
         mov Target_Layer_Y,cx
 
         mov dx ,BALL_Y
-        sub cx,dx
-        cmp cx,4
-        JlE X_HIT_CHECKER
+        cmp cx , dx
+        JE X_HIT_CHECKER
 
     	
         ; check layer_S
@@ -249,9 +249,8 @@ HITTING_STAGES PROC NEAR :
         mov Target_Layer_Y,cx
 
         mov dx ,BALL_Y
-        sub cx,dx
-        cmp cx,4
-        JlE X_HIT_CHECKER
+        cmp cx , dx
+        JE X_HIT_CHECKER
 
     mov si ,11
     ret
