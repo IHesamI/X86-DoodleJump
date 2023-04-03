@@ -145,14 +145,78 @@ code segment para 'CODE'
         call KEYBOARD_CHECKER
         CALL ENEMY_HITTING
         CALL HITTING_STAGES ;check for hitting the stages and reset the move style
-		;TODO => IF IN THIS PROCESS WE HIT A STAGE 
-		;TODO => THIS POSITION SHOULD BE NEW BALL_Y AND THE TIME FOR DOWN MUST ENDS
+        call upadte_STages
 		CALL DRAW_BALL
 		cmp si ,15
 		je counter_zero
 		jmp CHECK_TIME
 
 	Ball_down endp
+
+    upadte_STages proc near
+
+    ; Initial_LAYER_X DW 0A0h 
+    ; Initial_LAYER_Y DW 0A0h 
+	; Initial_LAYER_WIDTH DW 018h
+
+    ; LY_F_X DW 0Ah
+	; LY_F_Y DW 090h
+	
+	; LY_S_X DW 100h
+	; LY_S_Y DW 030h
+
+
+
+    call check_initial
+    call check_layer_F
+    call check_layer_S
+    ret
+    upadte_STages endp
+    
+    check_initial proc near
+        mov cx, current_location_Y
+        mov dx,Initial_LAYER_Y
+        cmp cx,dx
+        jl update_initial
+        ret
+
+    check_initial endp
+
+
+    update_initial proc near
+        call GENERATE_initial_Y
+        call GENERATE_initial_X
+        ret
+    update_initial endp
+
+    check_layer_F proc near
+        mov cx, current_location_Y
+        mov dx,LY_F_Y
+        cmp cx,dx
+        jl update_layer_F
+        ret
+    check_layer_F endp
+
+    update_layer_F proc near
+        call GENERATE_F_X
+        call GENERATE_F_Y
+        ret
+    update_layer_F endp
+
+    check_layer_S proc near
+        mov cx, current_location_Y
+        mov dx,LY_S_Y
+        cmp cx,dx
+        jl update_layer_S
+        ret
+    check_layer_S endp
+
+    update_layer_S proc near
+        call GENERATE_S_X
+        call GENERATE_S_Y
+        ret
+    update_layer_S endp
+
 
 counter_zero proc near
        mov si , 0       
@@ -264,8 +328,13 @@ X_HIT_CHECKER PROC NEAR
     CMP cx,dx
     jl NOTHIT
     mov si ,15
+
     mov cx,Target_Layer_Y
+    mov current_location_Y,cx
     mov BALL_Y,cx
+
+    mov cx , Target_Layer_X
+    mov current_location_x,cx
     ret
 
 X_HIT_CHECKER ENDP
@@ -533,20 +602,6 @@ PRINT_IN_CONSOLE ENDP
     DRAW_BALL ENDP
 
 	GENERATE_F_X PROC NEAR
-		; MOV AH, 0h ; intterupt to get system time
-		; INT 1Ah ; save clock ticks in DX			
-		; MOV AX, DX
-		; MOV DX, 0h
-		; MOV BX, 010d 
-		; DIV BX ; range the number between 0 to 9 dividing by 10
-		; MOV AL, DL
-		; MOV AH, 0
-		; MOV BX, 02d ; multiply the random number to screen X
-		; MUL BX 
-		; ADD AX, 100d
-		; MOV DX, 0
-        ; MOV LY_F_X, AX
-        
         mov ah,2ch ; GET THE SYSTEM TIME
         int 21h
         mov al,dl
@@ -565,31 +620,49 @@ PRINT_IN_CONSOLE ENDP
 
 	GENERATE_F_X ENDP 
 	
-	GENERATE_F_Y PROC NEAR
-	
-		
-		; MOV AH, 0h ; intterupt to get system time
-		; INT 1Ah ; save clock ticks in DX
-			
-		; MOV AX, DX
-		; MOV DX, 0h
-		; MOV BX, 010d 
-		; DIV BX ; range the number between 0 to 9 dividing by 10
-		; MOV AL, DL
-		; MOV AH, 0
-		; MOV BX, 03d ; multiply the random number to screen X
-		; MUL BX 
-		; ADD AX, 120d
-		; MOV DX, 0
-        ; MOV LY_F_Y, AX	
-		; RET
-
+	GENERATE_initial_Y PROC NEAR
         mov ah,2ch ; GET THE SYSTEM TIME
         int 21h
         mov al,dl
         mov ah ,00h
         cmp ax, 028h
-        jg GENERATE_S_Y
+        jg GENERATE_initial_Y
+        mov bx,CURRENT_LOCATION_Y
+        sub bx,ax
+        mov ax,bx ;* ax = current_location_Y - RandomNumber 
+	    MOV Initial_LAYER_Y, AX            
+		RET
+	
+    GENERATE_initial_Y ENDP 
+	
+    GENERATE_initial_X PROC NEAR 
+        mov ah,2ch ; GET THE SYSTEM TIME
+        int 21h
+        mov al,dl
+        mov ah ,00h
+        add ax,CURRENT_LOCATION_X
+        add ax,LAYER_WIDTH ;* Now    ax = current_x + ( Random ) + layer_width  checking if ax is out of the screen
+        cmp ax, 0140h
+        jg GENERATE_initial_X
+        sub ax,LAYER_WIDTH   ; * ax= current_x + ( Random )
+        sub ax,LAYER_WIDTH   ; * ax= current_x + ( Random )- width_layer
+        mov bx,CURRENT_LOCATION_X   
+        add bx,LAYER_WIDTH ; * bx= current_x + layer-width
+        cmp ax,bx ; * if  ax is out of range of bx so the ball cant reach the layer should ReGenerate the random number
+        jg GENERATE_initial_X
+        mov Initial_LAYER_Y,ax 
+        ret
+	GENERATE_initial_X ENDP 
+	
+    
+    GENERATE_F_Y PROC NEAR
+	
+        mov ah,2ch ; GET THE SYSTEM TIME
+        int 21h
+        mov al,dl
+        mov ah ,00h
+        cmp ax, 028h
+        jg GENERATE_F_Y
         mov bx,CURRENT_LOCATION_Y
         sub bx,ax
         mov ax,bx ;* ax = current_location_Y - RandomNumber 
@@ -597,19 +670,7 @@ PRINT_IN_CONSOLE ENDP
 		RET
 	GENERATE_F_Y ENDP
 	GENERATE_S_X PROC NEAR
-		; MOV AH, 0h ; intterupt to get system time
-		; INT 1Ah ; save clock ticks in DX
-			
-		; MOV AX, DX
-		; MOV DX, 0h
-		; MOV BX, 010d 
-		; DIV BX ; range the number between 0 to 9 dividing by 10
-		; MOV AL, DL
-		; MOV AH, 0
-		; MOV BX, 05d ; multiply the random number to screen X
-		; MUL BX 
-		; ADD AX, 150d
-		; MOV DX, 0
+
         mov ah,2ch ; GET THE SYSTEM TIME
         int 21h
         mov al,dl
@@ -620,13 +681,13 @@ PRINT_IN_CONSOLE ENDP
         mov ax,bx ;* ax = current_location_x - RandomNumber 
 
         cmp ax, 00h
-        jl GENERATE_F_X
+        jl GENERATE_S_X
         ; sub ax,LAYER_WIDTH
         ; add bx,LAYER_WIDTH
         add ax,LAYER_WIDTH
         mov bx,current_location_x
         cmp ax,bx ; * check if the  current_location_x - RandomNumber + LAYER_WIDTH is < current_location then need to ReGenerate
-        jl GENERATE_F_X
+        jl GENERATE_S_X
         sub ax,LAYER_WIDTH
         MOV LY_S_X, AX
 		RET
