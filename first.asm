@@ -26,10 +26,12 @@ DATA segment para 'DATA'
 
     Enemy_X DW 090h
     Enemy_Y DW 0A0h
+    
     Enemy_SIZE DW 05H                     
 
     Initial_LAYER_X DW 0A0h 
     Initial_LAYER_Y DW 0A0h 
+
 	Initial_LAYER_WIDTH DW 018h
 
     LY_F_X DW 0Ah
@@ -62,6 +64,12 @@ code segment para 'CODE'
         mov ah ,0h
         int 10h            
         ; TODO THIS MOV INSTRUCTIONS MUST GO INSIDE EACH PROCESS
+        mov cx,Initial_LAYER_X
+        mov CURRENT_LOCATION_X,cx
+
+        mov cx,Initial_LAYER_Y
+        mov CURRENT_LOCATION_Y,cx
+
         CALL GENERATE_F_X                
 		
 		CALL GENERATE_F_Y
@@ -145,7 +153,7 @@ code segment para 'CODE'
         call KEYBOARD_CHECKER
         CALL ENEMY_HITTING
         CALL HITTING_STAGES ;check for hitting the stages and reset the move style
-        call upadte_STages
+        
 		CALL DRAW_BALL
 		cmp si ,15
 		je counter_zero
@@ -154,19 +162,6 @@ code segment para 'CODE'
 	Ball_down endp
 
     upadte_STages proc near
-
-    ; Initial_LAYER_X DW 0A0h 
-    ; Initial_LAYER_Y DW 0A0h 
-	; Initial_LAYER_WIDTH DW 018h
-
-    ; LY_F_X DW 0Ah
-	; LY_F_Y DW 090h
-	
-	; LY_S_X DW 100h
-	; LY_S_Y DW 030h
-
-
-
     call check_initial
     call check_layer_F
     call check_layer_S
@@ -335,6 +330,7 @@ X_HIT_CHECKER PROC NEAR
 
     mov cx , Target_Layer_X
     mov current_location_x,cx
+    call upadte_STages
     ret
 
 X_HIT_CHECKER ENDP
@@ -354,10 +350,15 @@ KEYBOARD_CHECKER PROC NEAR
     jz Exit_Keyboard   
     mov ah ,00h
     int 16h
-    CMP AH,04BH
-    JE GO_LEFT
-    CMP AH , 04DH
+    CMP Al,'d'
     JE GO_RIGHT
+    CMP Al,'D'
+    JE GO_RIGHT
+    CMP Al , 'A'
+    JE GO_LEFT             
+    CMP Al , 'a'
+    JE GO_LEFT
+      
                    
                    ; 4B left Arrow
                    ; 4D Right Arrow
@@ -669,6 +670,7 @@ PRINT_IN_CONSOLE ENDP
 	    MOV LY_S_Y, AX            
 		RET
 	GENERATE_F_Y ENDP
+
 	GENERATE_S_X PROC NEAR
 
         mov ah,2ch ; GET THE SYSTEM TIME
@@ -708,7 +710,5 @@ PRINT_IN_CONSOLE ENDP
 
 	GENERATE_S_Y ENDP 
 	
- 
-
 code ends
 end
