@@ -5,6 +5,10 @@ Stack ends
 
 DATA segment para 'DATA'
     
+    CURRENT_LOCATION_X DW 0A0H
+    CURRENT_LOCATION_Y DW 0A0H
+
+
     TIME_AUX DB 0 ;
     
     BALL_X DW 0A0h                       ; current X position (column) of the ball
@@ -83,7 +87,7 @@ code segment para 'CODE'
     main endp
 
 ;! UP HANDLER{
-	Ball_up proc NEAR:
+	Ball_up proc NEAR
 
 		; TODO WHEN WE REACH CERTAIN HEIGHT THE CAMERA SHOULD MOVE
 		
@@ -98,7 +102,7 @@ code segment para 'CODE'
 
 	Ball_up endp
 
-    Check_Position proc near: 
+    Check_Position proc near
         ;  BALL_SIZE DW 04H                     ; size of the ball 
         mov dx , BALL_Y
         cmp dx , 09h               ;* IF Reach the top of the page reset the position of the ball     
@@ -108,14 +112,14 @@ code segment para 'CODE'
 
     Check_Position endp
 
-    Reset_Camera proc near: 
+    Reset_Camera proc near
         ; mov ax , 0A0H
         mov BALL_Y, 0A0H
         ret
     Reset_Camera ENDP
 
 
-    CHECK_SCORE PROC near: ;if the new Score reached this value will update
+    CHECK_SCORE PROC near ;if the new Score reached this value will update
         mov bx , BALL_Y
         mov cx , MAX_HEIGHT
         CMP bx , cx
@@ -123,7 +127,7 @@ code segment para 'CODE'
         RET
     CHECK_SCORE ENDP
 
-    UPDATE_SCORE PROC NEAR:
+    UPDATE_SCORE PROC NEAR
         MOV MAX_HEIGHT,bx
         RET
     UPDATE_SCORE ENDP
@@ -132,8 +136,7 @@ code segment para 'CODE'
 ;! }
 
 
-	Ball_down proc NEAR:
-
+	Ball_down proc NEAR
             ; BALL_X DW 0A0h                       ; current X position (column) of the ball
         	; BALL_Y DW 0A0h                       ; current Y position (column) of the ball 
         mov AX,Y_Ball_Velocity
@@ -151,13 +154,13 @@ code segment para 'CODE'
 
 	Ball_down endp
 
-counter_zero proc near :
+counter_zero proc near
        mov si , 0       
        jmp CHECK_TIME
 
 counter_zero endp
 
-ENEMY_HITTING PROC NEAR:
+ENEMY_HITTING PROC NEAR
 
         mov cx,Enemy_X
         MOV Target_Layer_X , cx ; if the y of the ball and the layer is same we should check for x and need to store them in a temporarily variable
@@ -189,13 +192,13 @@ ENEMY_HITTING PROC NEAR:
 
 ENEMY_HITTING ENDP
 
-ENEMY_NOTHIT PROC NEAR:
+ENEMY_NOTHIT PROC NEAR
     RET
 ENEMY_NOTHIT ENDP
 
 ; ! this procecss is the responsible of hitting action[
 
-HITTING_STAGES PROC NEAR :
+HITTING_STAGES PROC NEAR
     
         ; check Initial_LAYER
         mov cx,Initial_LAYER_X
@@ -249,7 +252,7 @@ HITTING_STAGES PROC NEAR :
     ret
 HITTING_STAGES ENDP
 
-X_HIT_CHECKER PROC NEAR:
+X_HIT_CHECKER PROC NEAR
     ; check if the x is in layer hit the layer and go up 
     MOV cx , TEMP_Ball_X_ 
     mov dx , Target_Layer_X
@@ -267,13 +270,13 @@ X_HIT_CHECKER PROC NEAR:
 
 X_HIT_CHECKER ENDP
 
-NOTHIT proc near:
+NOTHIT proc near
     mov si ,11
     ret
 NOTHIT endp
 ;!  ]
 
-KEYBOARD_CHECKER PROC NEAR :
+KEYBOARD_CHECKER PROC NEAR
     mov ah ,0h
     int 10h
     
@@ -294,12 +297,12 @@ KEYBOARD_CHECKER PROC NEAR :
     ret
 KEYBOARD_CHECKER ENDP
 
-GO_LEFT PROC NEAR:     
+GO_LEFT PROC NEAR     
     sub BALL_X,04H   
     RET
 GO_LEFT ENDP             
                
-GO_RIGHT PROC NEAR:
+GO_RIGHT PROC NEAR
     add BALL_X,04H   
     RET
 GO_RIGHT ENDP
@@ -307,7 +310,7 @@ GO_RIGHT ENDP
 
 
 
-PRINT_SCORE proc near: ;print Score
+PRINT_SCORE proc near;print Score
 
         ; mov dx, 0f28h
         ; mov bh, 0      ; Page=0
@@ -350,7 +353,7 @@ PRINT_SCORE proc near: ;print Score
 
 PRINT_SCORE endp
 
-GAME_OVER proc near:
+GAME_OVER proc near
 
         mov bx, BALL_Y
         cmp bx,0C8h
@@ -359,13 +362,13 @@ GAME_OVER proc near:
     
     GAME_OVER endp
 
-    EndGame proc near:
+    EndGame proc near
         mov ah , 4ch
         int 21h
     EndGame endp
 
 
-DIVIDE_NUMBER_FOR_PRINT PROC NEAR: ;print the score digit by digit
+DIVIDE_NUMBER_FOR_PRINT PROC NEAR ;print the score digit by digit
  ;mov bx, 000Fh
  MOV CX,0
  MOV BX,0AH        ;bx=10 for dividing
@@ -391,7 +394,7 @@ DIVIDE_NUMBER_FOR_PRINT PROC NEAR: ;print the score digit by digit
     
 DIVIDE_NUMBER_FOR_PRINT ENDP
 
-PRINT_IN_CONSOLE PROC NEAR:
+PRINT_IN_CONSOLE PROC NEAR
     
   PRINT:   
     
@@ -408,7 +411,7 @@ PRINT_IN_CONSOLE PROC NEAR:
     
 PRINT_IN_CONSOLE ENDP
 
-    DRAW_BALL PROC NEAR:
+    DRAW_BALL PROC NEAR
 
         ; mov ah ,7h
         ; int 10h
@@ -530,82 +533,118 @@ PRINT_IN_CONSOLE ENDP
     DRAW_BALL ENDP
 
 	GENERATE_F_X PROC NEAR
-	
-		
-		MOV AH, 0h ; intterupt to get system time
-		INT 1Ah ; save clock ticks in DX
-			
-		MOV AX, DX
-		MOV DX, 0h
-		MOV BX, 010d 
-		DIV BX ; range the number between 0 to 9 dividing by 10
-		MOV AL, DL
-		MOV AH, 0
-		MOV BX, 02d ; multiply the random number to screen X
-		MUL BX 
-		ADD AX, 100d
-		MOV DX, 0
-        MOV LY_F_X, AX
-
+		; MOV AH, 0h ; intterupt to get system time
+		; INT 1Ah ; save clock ticks in DX			
+		; MOV AX, DX
+		; MOV DX, 0h
+		; MOV BX, 010d 
+		; DIV BX ; range the number between 0 to 9 dividing by 10
+		; MOV AL, DL
+		; MOV AH, 0
+		; MOV BX, 02d ; multiply the random number to screen X
+		; MUL BX 
+		; ADD AX, 100d
+		; MOV DX, 0
+        ; MOV LY_F_X, AX
+        
+        mov ah,2ch ; GET THE SYSTEM TIME
+        int 21h
+        mov al,dl
+        mov ah ,00h
+        add ax,CURRENT_LOCATION_X
+        add ax,LAYER_WIDTH ;* Now    ax = current_x + ( Random ) + layer-width  checking if ax is out of the screen
+        cmp ax, 0140h
+        jg GENERATE_F_X
+        sub ax,LAYER_WIDTH   ; * ax= current_x + ( Random )
+        mov bx,CURRENT_LOCATION_X   
+        add bx,LAYER_WIDTH ; * bx= current_x + layer-width
+        cmp ax,bx ; * if  ax is out of range of bx so the ball cant reach the layer should ReGenerate the random number
+        jg GENERATE_F_X
+        mov LY_F_X, ax
 		RET
+
 	GENERATE_F_X ENDP 
 	
 	GENERATE_F_Y PROC NEAR
 	
 		
-		MOV AH, 0h ; intterupt to get system time
-		INT 1Ah ; save clock ticks in DX
+		; MOV AH, 0h ; intterupt to get system time
+		; INT 1Ah ; save clock ticks in DX
 			
-		MOV AX, DX
-		MOV DX, 0h
-		MOV BX, 010d 
-		DIV BX ; range the number between 0 to 9 dividing by 10
-		MOV AL, DL
-		MOV AH, 0
-		MOV BX, 03d ; multiply the random number to screen X
-		MUL BX 
-		ADD AX, 120d
-		MOV DX, 0
-        MOV LY_F_Y, AX	
+		; MOV AX, DX
+		; MOV DX, 0h
+		; MOV BX, 010d 
+		; DIV BX ; range the number between 0 to 9 dividing by 10
+		; MOV AL, DL
+		; MOV AH, 0
+		; MOV BX, 03d ; multiply the random number to screen X
+		; MUL BX 
+		; ADD AX, 120d
+		; MOV DX, 0
+        ; MOV LY_F_Y, AX	
+		; RET
 
+        mov ah,2ch ; GET THE SYSTEM TIME
+        int 21h
+        mov al,dl
+        mov ah ,00h
+        cmp ax, 028h
+        jg GENERATE_S_Y
+        mov bx,CURRENT_LOCATION_Y
+        sub bx,ax
+        mov ax,bx ;* ax = current_location_Y - RandomNumber 
+	    MOV LY_S_Y, AX            
 		RET
 	GENERATE_F_Y ENDP
 	GENERATE_S_X PROC NEAR
-	
-		
-		MOV AH, 0h ; intterupt to get system time
-		INT 1Ah ; save clock ticks in DX
+		; MOV AH, 0h ; intterupt to get system time
+		; INT 1Ah ; save clock ticks in DX
 			
-		MOV AX, DX
-		MOV DX, 0h
-		MOV BX, 010d 
-		DIV BX ; range the number between 0 to 9 dividing by 10
-		MOV AL, DL
-		MOV AH, 0
-		MOV BX, 05d ; multiply the random number to screen X
-		MUL BX 
-		ADD AX, 150d
-		MOV DX, 0
+		; MOV AX, DX
+		; MOV DX, 0h
+		; MOV BX, 010d 
+		; DIV BX ; range the number between 0 to 9 dividing by 10
+		; MOV AL, DL
+		; MOV AH, 0
+		; MOV BX, 05d ; multiply the random number to screen X
+		; MUL BX 
+		; ADD AX, 150d
+		; MOV DX, 0
+        mov ah,2ch ; GET THE SYSTEM TIME
+        int 21h
+        mov al,dl
+        mov ah ,00h
 
+        mov bx,CURRENT_LOCATION_X
+        sub bx,ax
+        mov ax,bx ;* ax = current_location_x - RandomNumber 
+
+        cmp ax, 00h
+        jl GENERATE_F_X
+        ; sub ax,LAYER_WIDTH
+        ; add bx,LAYER_WIDTH
+        add ax,LAYER_WIDTH
+        mov bx,current_location_x
+        cmp ax,bx ; * check if the  current_location_x - RandomNumber + LAYER_WIDTH is < current_location then need to ReGenerate
+        jl GENERATE_F_X
+        sub ax,LAYER_WIDTH
         MOV LY_S_X, AX
 		RET
 	GENERATE_S_X ENDP 
+
 	GENERATE_S_Y PROC NEAR
-		MOV AH, 0h ; intterupt to get system time
-		INT 1Ah ; save clock ticks in DX
-			
-		MOV AX, DX
-		MOV DX, 0h
-		MOV BX, 010d 
-		DIV BX ; range the number between 0 to 9 dividing by 10
-		MOV AL, DL
-		MOV AH, 0
-		MOV BX, 3d ; multiply the random number to screen X
-		MUL BX 
-		ADD AX, 100d
-		MOV DX, 0
+        mov ah,2ch ; GET THE SYSTEM TIME
+        int 21h
+        mov al,dl
+        mov ah ,00h
+        cmp ax, 028h
+        jg GENERATE_S_Y
+        mov bx,CURRENT_LOCATION_Y
+        sub bx,ax
+        mov ax,bx ;* ax = current_location_Y - RandomNumber 
 	    MOV LY_S_Y, AX            
 		RET
+
 	GENERATE_S_Y ENDP 
 	
  
