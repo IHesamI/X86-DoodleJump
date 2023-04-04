@@ -162,32 +162,30 @@ code segment para 'CODE'
 	Ball_down endp
 
     upadte_STages proc near
-    call check_initial
-    call check_layer_F
-    call check_layer_S
+        call check_initial
+        call check_layer_F
+        call check_layer_S
     ret
     upadte_STages endp
     
     check_initial proc near
         mov cx, current_location_Y
         mov dx,Initial_LAYER_Y
-        cmp cx,dx
+        cmp cx , dx
         jl update_initial
         ret
-
     check_initial endp
 
-
     update_initial proc near
-        call GENERATE_initial_Y
         call GENERATE_initial_X
+        call GENERATE_initial_Y
         ret
     update_initial endp
 
     check_layer_F proc near
         mov cx, current_location_Y
         mov dx,LY_F_Y
-        cmp cx,dx
+        cmp cx , dx
         jl update_layer_F
         ret
     check_layer_F endp
@@ -201,7 +199,7 @@ code segment para 'CODE'
     check_layer_S proc near
         mov cx, current_location_Y
         mov dx,LY_S_Y
-        cmp cx,dx
+        cmp cx , dx
         jl update_layer_S
         ret
     check_layer_S endp
@@ -272,7 +270,6 @@ HITTING_STAGES PROC NEAR
         mov dx ,BALL_Y
         sub cx,dx
         cmp cx,03h
-
         JlE X_HIT_CHECKER
         
 	
@@ -325,12 +322,12 @@ X_HIT_CHECKER PROC NEAR
     mov si ,15
 
     mov cx,Target_Layer_Y
-    mov current_location_Y,cx
+    mov CURRENT_LOCATION_Y,cx
     mov BALL_Y,cx
 
     mov cx , Target_Layer_X
     mov current_location_x,cx
-    call upadte_STages
+    ; call upadte_STages
     ret
 
 X_HIT_CHECKER ENDP
@@ -417,10 +414,8 @@ PRINT_SCORE proc near;print Score
         mov     al, ":"
         int     10h
 
-        CALL    DIVIDE_NUMBER_FOR_PRINT
+        CALL DIVIDE_NUMBER_FOR_PRINT
     ret
-
-
 PRINT_SCORE endp
 
 GAME_OVER proc near
@@ -449,7 +444,8 @@ DIVIDE_NUMBER_FOR_PRINT PROC NEAR ;print the score digit by digit
  mov ax ,cx ; AX= SCORE
  mov cx ,0
  mov SCORE, ax
- DIVIDER:
+    mov ax,CURRENT_LOCATION_Y
+  DIVIDER:
      DIV BL    
      INC CX 
      MOV BH ,0
@@ -459,9 +455,8 @@ DIVIDE_NUMBER_FOR_PRINT PROC NEAR ;print the score digit by digit
      MOV AH,0
      CMP AL ,0               
      JE PRINT_IN_CONSOLE     
-
-    JMP DIVIDER
-    
+     JMP DIVIDER
+    ret   
 DIVIDE_NUMBER_FOR_PRINT ENDP
 
 PRINT_IN_CONSOLE PROC NEAR
@@ -475,13 +470,13 @@ PRINT_IN_CONSOLE PROC NEAR
     ADD AL , 030H
     INT 10h
     
- LOOP PRINT 
+    LOOP PRINT 
 
  RET
     
 PRINT_IN_CONSOLE ENDP
 
-    DRAW_BALL PROC NEAR
+DRAW_BALL PROC NEAR
 
         ; mov ah ,7h
         ; int 10h
@@ -504,18 +499,17 @@ PRINT_IN_CONSOLE ENDP
             MOV AX, CX
             SUB AX,Enemy_X
             CMP AX,Enemy_SIZE
-            JNG Enemy_Draw
+            jng Enemy_Draw
 			MOV cx , Enemy_X ;initial column 
             INC DX
             MOV AX, DX
             SUB AX, Enemy_Y
             CMP AX, Enemy_SIZE
-            JNG Enemy_Draw
+            jng Enemy_Draw
 
 
         MOV CX, Initial_LAYER_X 
 		MOV DX, Initial_LAYER_Y 
-        DEC DX
 		
 		Initial_LAYER:
 			MOV AH, 0Ch
@@ -526,13 +520,13 @@ PRINT_IN_CONSOLE ENDP
             MOV AX, CX
             SUB AX,Initial_LAYER_X
             CMP AX,LAYER_WIDTH
-            JNG Initial_LAYER
+            jng Initial_LAYER
 			MOV cx , Initial_LAYER_X ;initial column 
             INC DX
             MOV AX, DX
             SUB AX, Initial_LAYER_Y
             CMP AX, LAYER_HEIGHT
-            JNG Initial_LAYER
+            jng Initial_LAYER
 
         
 
@@ -541,10 +535,10 @@ PRINT_IN_CONSOLE ENDP
 		MOV DX, LY_F_Y
 		
 		DRAW_LAYER_F:
-			MOV AH, 0Ch
-			MOV AL, 0Fh
-			MOV BH, 00h
-			INT 10h
+            mov ah , 0Ch
+            mov al , 02h ; Set the color of pixel
+            mov bh , 01eh
+            int 10h
 			INC CX
             MOV AX, CX
             SUB AX,LY_F_X
@@ -569,18 +563,19 @@ PRINT_IN_CONSOLE ENDP
             MOV AX, CX
             SUB AX,LY_S_X
             CMP AX,LAYER_WIDTH
-            JNG DRAW_LAYER_S
+            jng DRAW_LAYER_S
 			MOV cx , LY_S_X ;initial column 
             INC DX
             MOV AX, DX
             SUB AX, LY_S_Y
             CMP AX, LAYER_HEIGHT
-            JNG DRAW_LAYER_S
+            jng DRAW_LAYER_S
 		
 
 
         mov cx , BALL_X ;initial column 
         mov dx , BALL_Y ;initial line
+
         DRAW_BALL_Horizontal:
             mov ah , 0Ch
             mov al , 02h ; Set the color of pixel
@@ -620,21 +615,21 @@ PRINT_IN_CONSOLE ENDP
 		RET
 
 	GENERATE_F_X ENDP 
+    GENERATE_F_Y PROC NEAR
 	
-	GENERATE_initial_Y PROC NEAR
         mov ah,2ch ; GET THE SYSTEM TIME
         int 21h
         mov al,dl
         mov ah ,00h
         cmp ax, 028h
-        jg GENERATE_initial_Y
+        jg GENERATE_F_Y
         mov bx,CURRENT_LOCATION_Y
         sub bx,ax
         mov ax,bx ;* ax = current_location_Y - RandomNumber 
-	    MOV Initial_LAYER_Y, AX            
+	    MOV LY_F_Y, AX            
 		RET
+	GENERATE_F_Y ENDP
 	
-    GENERATE_initial_Y ENDP 
 	
     GENERATE_initial_X PROC NEAR 
         mov ah,2ch ; GET THE SYSTEM TIME
@@ -651,25 +646,25 @@ PRINT_IN_CONSOLE ENDP
         add bx,LAYER_WIDTH ; * bx= current_x + layer-width
         cmp ax,bx ; * if  ax is out of range of bx so the ball cant reach the layer should ReGenerate the random number
         jg GENERATE_initial_X
-        mov Initial_LAYER_Y,ax 
+        mov Initial_LAYER_X,ax 
         ret
 	GENERATE_initial_X ENDP 
-	
-    
-    GENERATE_F_Y PROC NEAR
-	
+	GENERATE_initial_Y PROC NEAR
         mov ah,2ch ; GET THE SYSTEM TIME
         int 21h
         mov al,dl
         mov ah ,00h
         cmp ax, 028h
-        jg GENERATE_F_Y
+        jg GENERATE_initial_Y
         mov bx,CURRENT_LOCATION_Y
         sub bx,ax
         mov ax,bx ;* ax = current_location_Y - RandomNumber 
-	    MOV LY_S_Y, AX            
+	    MOV Initial_LAYER_Y, AX            
 		RET
-	GENERATE_F_Y ENDP
+	
+    GENERATE_initial_Y ENDP 
+	
+    
 
 	GENERATE_S_X PROC NEAR
 
@@ -677,8 +672,7 @@ PRINT_IN_CONSOLE ENDP
         int 21h
         mov al,dl
         mov ah ,00h
-
-        mov bx,CURRENT_LOCATION_X
+        mov bx,current_location_x
         sub bx,ax
         mov ax,bx ;* ax = current_location_x - RandomNumber 
 
