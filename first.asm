@@ -152,11 +152,9 @@ code segment para 'CODE'
         Call GAME_OVER
         call KEYBOARD_CHECKER
         CALL ENEMY_HITTING
-        CALL HITTING_STAGES ;check for hitting the stages and reset the move style
-        
+        CALL HITTING_STAGES ;check for hitting the stages and reset the move style        
 		CALL DRAW_BALL
-		cmp si ,15
-		je counter_zero
+
 		jmp CHECK_TIME
 
 	Ball_down endp
@@ -211,11 +209,11 @@ code segment para 'CODE'
     update_layer_S endp
 
 
-counter_zero proc near
-       mov si , 0       
-       jmp CHECK_TIME
+; counter_zero proc near
+;        mov si , 0       
+;        jmp CHECK_TIME
 
-counter_zero endp
+; counter_zero endp
 
 ENEMY_HITTING PROC NEAR
 
@@ -255,9 +253,7 @@ ENEMY_NOTHIT ENDP
 
 ; ! this procecss is the responsible of hitting action[
 
-HITTING_STAGES PROC NEAR
-    
-        ; check Initial_LAYER
+Hit_Stage_initial proc near 
         mov cx,Initial_LAYER_X
         MOV Target_Layer_X , cx ; if the y of the ball and the layer is same we should check for x and need to store them in a temporarily variable
 
@@ -267,44 +263,54 @@ HITTING_STAGES PROC NEAR
         mov cx ,Initial_LAYER_Y
         mov Target_Layer_Y,cx
 
-        mov dx ,BALL_Y
-        sub cx,dx
-        cmp cx,03h
-        JlE X_HIT_CHECKER
-        
-	
-        ; check layer_F
+    mov dx ,BALL_Y
+    sub cx,dx
+    cmp cx,03h
+    JlE X_HIT_CHECKER
+    ret
+
+Hit_Stage_initial endp
+
+Hit_Stage_F proc near
+
         mov cx,LY_F_X
         MOV Target_Layer_X , cx ; if the y of the ball and the layer is same we should check for x and need to store them in a temporarily variable
-
         mov cx,BALL_X
         MOV TEMP_Ball_X_ , cx
-
         mov cx ,LY_F_Y
         mov Target_Layer_Y,cx
-
         mov dx ,BALL_Y
         sub cx,dx
         cmp cx,03h
         JlE X_HIT_CHECKER
+        ret
 
-    	
-        ; check layer_S
+Hit_Stage_F endp
+
+Hit_Stage_S proc near
+
         mov cx,LY_S_X
         MOV Target_Layer_X , cx ; if the y of the ball and the layer is same we should check for x and need to store them in a temporarily variable
-
         mov cx,BALL_X
         MOV TEMP_Ball_X_ , cx
-
         mov cx ,LY_S_Y
         mov Target_Layer_Y,cx
-
         mov dx ,BALL_Y
         sub cx,dx
         cmp cx,03h
         JlE X_HIT_CHECKER
+        ret
 
-    mov si ,16
+Hit_Stage_S endp
+
+HITTING_STAGES PROC NEAR
+        mov si ,11
+        ; check Initial_LAYER
+        call Hit_Stage_initial
+        ; check layer_F
+        call Hit_Stage_F
+        ; check layer_S
+        call Hit_Stage_S
     ret
 HITTING_STAGES ENDP
 
@@ -319,7 +325,7 @@ X_HIT_CHECKER PROC NEAR
     mov dx , Target_Layer_X
     CMP cx,dx
     jl NOTHIT
-    mov si ,15
+    mov si ,0
 
     mov cx,Target_Layer_Y
     mov CURRENT_LOCATION_Y,cx
@@ -327,13 +333,12 @@ X_HIT_CHECKER PROC NEAR
 
     mov cx , Target_Layer_X
     mov current_location_x,cx
-    ; call upadte_STages
+    call upadte_STages
     ret
 
 X_HIT_CHECKER ENDP
 
 NOTHIT proc near
-    mov si ,11
     ret
 NOTHIT endp
 ;!  ]
