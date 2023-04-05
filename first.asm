@@ -48,6 +48,13 @@ DATA segment para 'DATA'
     Target_Layer_Y dw 00h
     TEMP_Ball_X_ dw 00h
 	
+	X DW 0h
+	Y DW 02h
+	
+	R DW 02h
+	
+	D DW  (?)
+	
 Data ends
 
 
@@ -106,6 +113,7 @@ code segment para 'CODE'
         call CHECK_SCORE        
         call Check_Position
 		CALL DRAW_BALL
+		
 		jmp CHECK_TIME
 
 	Ball_up endp
@@ -154,6 +162,7 @@ code segment para 'CODE'
         CALL ENEMY_HITTING
         CALL HITTING_STAGES ;check for hitting the stages and reset the move style        
 		CALL DRAW_BALL
+		;CALL DRAW_CRCL
 
 		jmp CHECK_TIME
 
@@ -578,28 +587,30 @@ DRAW_BALL PROC NEAR
 		
 
 
-        mov cx , BALL_X ;initial column 
-        mov dx , BALL_Y ;initial line
+        ; mov cx , BALL_X ;initial column 
+        ; mov dx , BALL_Y ;initial line
 
-        DRAW_BALL_Horizontal:
-            mov ah , 0Ch
-            mov al , 02h ; Set the color of pixel
-            mov bh , 01eh
-            int 10h
-            inc cx
-            MOV ax, cx
-            SUB ax,BALL_X
-            cmp ax,BALL_SIZE
-            jng DRAW_BALL_Horizontal
-            mov cx , BALL_X ;initial column 
-            inc dx 
-            MOV ax, dx
-            SUB ax,BALL_Y
-            cmp ax,BALL_SIZE
-            jng DRAW_BALL_Horizontal
+        ; DRAW_BALL_Horizontal:
+            ; mov ah , 0Ch
+            ; mov al , 02h ; Set the color of pixel
+            ; mov bh , 01eh
+            ; int 10h
+            ; inc cx
+            ; MOV ax, cx
+            ; SUB ax,BALL_X
+            ; cmp ax,BALL_SIZE
+            ; jng DRAW_BALL_Horizontal
+            ; mov cx , BALL_X ;initial column 
+            ; inc dx 
+            ; MOV ax, dx
+            ; SUB ax,BALL_Y
+            ; cmp ax,BALL_SIZE
+            ; jng DRAW_BALL_Horizontal
 
-        DRAW_BALL_VERTICAL:
-        RET
+        ; DRAW_BALL_VERTICAL:
+        ; RET
+		CALL DRAW_CRCL
+		ret
     DRAW_BALL ENDP
 
 	GENERATE_F_X PROC NEAR
@@ -708,6 +719,187 @@ DRAW_BALL PROC NEAR
 		RET
 
 	GENERATE_S_Y ENDP 
+	DRAW_CRCL PROC NEAR
+	
+		MOV X, 0h ; x = 0
+		MOV AX, R ; y = r
+		MOV Y, AX
+		
+		MOV AX, R ; d = 3 - (2 * r)
+		MOV BX, 2h
+		MUL BX
+		MOV BX, AX
+		MOV AX, 3h
+		SUB AX, BX
+		MOV D, AX
+		
+		
+		CALL DRAW_PIXELS
+		MOV AX, X
+		MOV BX, Y
+		MOV DX, D
+		CMP AX, BX ; X <= Y
+		JNG WHILE_L
+		
+		WHILE_L:
+			
+			ADD AX, 1h
+			MOV X, AX
+			
+			MOV DX, D
+			CMP DX, 0
+			JG IF_C
+			JNG ELSE_C
+			RET
+			
+		IF_C:
+			SUB BX, 1
+			MOV Y, BX
+			
+			MOV AX, X
+			MOV BX, Y 
+			SUB AX, BX
+			MOV BX, 4h
+			MUL BX
+			ADD D, AX
+			ADD D, 10h
+			CALL DRAW_PIXELS
+			MOV AX, X
+			MOV BX, Y
+			MOV DX, D
+			CMP AX, BX ; X <= Y
+			JNG WHILE_L
+			RET
+			
+		ELSE_C:
+			MOV AX, X
+			MOV BX, 4h
+			MUL BX 
+			ADD D, AX 
+			ADD D, 6h
+			CALL DRAW_PIXELS
+			MOV AX, X
+			MOV BX, Y
+			MOV DX, D
+			CMP AX, BX ; X <= Y
+			JNG WHILE_L
+			MOV AX, X
+			MOV BX, Y
+			MOV DX, D
+			CMP AX, BX ; X <= Y
+			JNG WHILE_L
+			RET 
+		
+			
+			
+		
+		
+		
+		RET 
+		
+	DRAW_CRCL ENDP
+	
+	DRAW_PIXELS PROC NEAR
+		
+		
+		
+		; 1
+		MOV CX, BALL_X ; xc+x
+		ADD CX, X
+		
+		MOV DX, BALL_Y ; yc+y
+		ADD DX, Y
+		
+		mov ah , 0Ch
+		mov al , 0Fh ; Set the color of pixel
+		mov bh , 00h
+		int 10h
+		
+		; 2
+		MOV CX, BALL_X ; xc-x
+		SUB CX, X
+		
+		MOV DX, BALL_Y ; yc+y
+		ADD DX, Y
+		
+		mov ah , 0Ch
+		mov al , 0Fh ; Set the color of pixel
+		mov bh , 00h
+		int 10h
+		
+		; 3
+		MOV CX, BALL_X ; xc+x
+		ADD CX, X
+		
+		MOV DX, BALL_Y ; yc-y
+		SUB DX, Y
+		
+		mov ah , 0Ch
+		mov al , 0Fh ; Set the color of pixel
+		mov bh , 00h
+		int 10h
+		
+		; 4
+		MOV CX, BALL_X ; xc-x
+		SUB CX, X
+		
+		MOV DX, BALL_Y ; yc-y
+		SUB DX, Y
+		
+		mov ah , 0Ch
+		mov al , 0Fh ; Set the color of pixel
+		mov bh , 00h
+		int 10h
+		
+		; 5
+		MOV CX, BALL_X ; xc+y
+		ADD CX, Y
+		
+		MOV DX, BALL_Y ; yc+x
+		ADD DX, X
+		
+		mov ah , 0Ch
+		mov al , 0Fh ; Set the color of pixel
+		mov bh , 00h
+		int 10h
+		
+		; 6 
+		MOV CX, BALL_X ; xc-y
+		SUB CX, Y
+		
+		MOV DX, BALL_Y ; yc+x
+		ADD DX, X
+		
+		mov ah , 0Ch
+		mov al , 0Fh ; Set the color of pixel
+		mov bh , 00h
+		int 10h
+		
+		; 7
+		MOV CX, BALL_X ; xc+y
+		ADD CX, Y
+		
+		MOV DX, BALL_Y ; yc-x
+		SUB DX, X
+		
+		mov ah , 0Ch
+		mov al , 0Fh ; Set the color of pixel
+		mov bh , 00h
+		int 10h
+		
+		; 8
+		MOV CX, BALL_X ; xc-y
+		SUB CX, Y
+		
+		MOV DX, BALL_Y ; yc-x
+		SUB DX, X
+		
+		mov ah , 0Ch
+		mov al , 0Fh ; Set the color of pixel
+		mov bh , 00h
+		int 10h
+		RET
+	DRAW_PIXELS ENDP
 	
 code ends
 end
