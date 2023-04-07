@@ -457,8 +457,11 @@ DIVIDE_NUMBER_FOR_PRINT PROC NEAR ;print the score digit by digit
  sub cx ,ax
  mov ax ,cx ; AX= SCORE
  mov cx ,0
+;  mov bx,score
+;  add bx,ax
+
  mov SCORE, ax
-    mov ax,CURRENT_LOCATION_Y
+    ; mov ax,CURRENT_LOCATION_Y
   DIVIDER:
      DIV BL    
      INC CX 
@@ -550,8 +553,8 @@ DRAW_BALL PROC NEAR
 		
 		DRAW_LAYER_F:
             mov ah , 0Ch
-            mov al , 02h ; Set the color of pixel
-            mov bh , 01eh
+            mov al , 0fh ; Set the color of pixel
+            mov bh , 00h
             int 10h
 			INC CX
             MOV AX, CX
@@ -584,34 +587,10 @@ DRAW_BALL PROC NEAR
             SUB AX, LY_S_Y
             CMP AX, LAYER_HEIGHT
             jng DRAW_LAYER_S
-		
-
-
-        ; mov cx , BALL_X ;initial column 
-        ; mov dx , BALL_Y ;initial line
-
-        ; DRAW_BALL_Horizontal:
-            ; mov ah , 0Ch
-            ; mov al , 02h ; Set the color of pixel
-            ; mov bh , 01eh
-            ; int 10h
-            ; inc cx
-            ; MOV ax, cx
-            ; SUB ax,BALL_X
-            ; cmp ax,BALL_SIZE
-            ; jng DRAW_BALL_Horizontal
-            ; mov cx , BALL_X ;initial column 
-            ; inc dx 
-            ; MOV ax, dx
-            ; SUB ax,BALL_Y
-            ; cmp ax,BALL_SIZE
-            ; jng DRAW_BALL_Horizontal
-
-        ; DRAW_BALL_VERTICAL:
-        ; RET
-		CALL DRAW_CRCL
+			
+        CALL DRAW_CRCL
 		ret
-    DRAW_BALL ENDP
+DRAW_BALL ENDP
 
 	GENERATE_F_X PROC NEAR
         mov ah,2ch ; GET THE SYSTEM TIME
@@ -670,6 +649,7 @@ DRAW_BALL PROC NEAR
         int 21h
         mov al,dl
         mov ah ,00h
+        add al,05h
         cmp ax, 028h
         jg GENERATE_initial_Y
         mov bx,CURRENT_LOCATION_Y
@@ -710,6 +690,7 @@ DRAW_BALL PROC NEAR
         int 21h
         mov al,dl
         mov ah ,00h
+        add al,010h
         cmp ax, 028h
         jg GENERATE_S_Y
         mov bx,CURRENT_LOCATION_Y
@@ -800,9 +781,6 @@ DRAW_BALL PROC NEAR
 	DRAW_CRCL ENDP
 	
 	DRAW_PIXELS PROC NEAR
-		
-		
-		
 		; 1
 		MOV CX, BALL_X ; xc+x
 		ADD CX, X
@@ -810,9 +788,9 @@ DRAW_BALL PROC NEAR
 		MOV DX, BALL_Y ; yc+y
 		ADD DX, Y
 		
-		mov ah , 0Ch
-		mov al , 0Fh ; Set the color of pixel
-		mov bh , 00h
+            mov ah , 0Ch
+            mov al , 02h ; Set the color of pixel
+            mov bh , 01eh
 		int 10h
 		
 		; 2
@@ -822,9 +800,9 @@ DRAW_BALL PROC NEAR
 		MOV DX, BALL_Y ; yc+y
 		ADD DX, Y
 		
-		mov ah , 0Ch
-		mov al , 0Fh ; Set the color of pixel
-		mov bh , 00h
+            mov ah , 0Ch
+            mov al , 02h ; Set the color of pixel
+            mov bh , 01eh
 		int 10h
 		
 		; 3
@@ -834,9 +812,9 @@ DRAW_BALL PROC NEAR
 		MOV DX, BALL_Y ; yc-y
 		SUB DX, Y
 		
-		mov ah , 0Ch
-		mov al , 0Fh ; Set the color of pixel
-		mov bh , 00h
+            mov ah , 0Ch
+            mov al , 02h ; Set the color of pixel
+            mov bh , 01eh
 		int 10h
 		
 		; 4
@@ -846,9 +824,9 @@ DRAW_BALL PROC NEAR
 		MOV DX, BALL_Y ; yc-y
 		SUB DX, Y
 		
-		mov ah , 0Ch
-		mov al , 0Fh ; Set the color of pixel
-		mov bh , 00h
+            mov ah , 0Ch
+            mov al , 02h ; Set the color of pixel
+            mov bh , 01eh
 		int 10h
 		
 		; 5
@@ -858,9 +836,9 @@ DRAW_BALL PROC NEAR
 		MOV DX, BALL_Y ; yc+x
 		ADD DX, X
 		
-		mov ah , 0Ch
-		mov al , 0Fh ; Set the color of pixel
-		mov bh , 00h
+            mov ah , 0Ch
+            mov al , 02h ; Set the color of pixel
+            mov bh , 01eh
 		int 10h
 		
 		; 6 
@@ -870,9 +848,9 @@ DRAW_BALL PROC NEAR
 		MOV DX, BALL_Y ; yc+x
 		ADD DX, X
 		
-		mov ah , 0Ch
-		mov al , 0Fh ; Set the color of pixel
-		mov bh , 00h
+            mov ah , 0Ch
+            mov al , 02h ; Set the color of pixel
+            mov bh , 01eh
 		int 10h
 		
 		; 7
@@ -882,9 +860,9 @@ DRAW_BALL PROC NEAR
 		MOV DX, BALL_Y ; yc-x
 		SUB DX, X
 		
-		mov ah , 0Ch
-		mov al , 0Fh ; Set the color of pixel
-		mov bh , 00h
+            mov ah , 0Ch
+            mov al , 02h ; Set the color of pixel
+            mov bh , 01eh
 		int 10h
 		
 		; 8
@@ -894,9 +872,9 @@ DRAW_BALL PROC NEAR
 		MOV DX, BALL_Y ; yc-x
 		SUB DX, X
 		
-		mov ah , 0Ch
-		mov al , 0Fh ; Set the color of pixel
-		mov bh , 00h
+            mov ah , 0Ch
+            mov al , 02h ; Set the color of pixel
+            mov bh , 01eh
 		int 10h
 		RET
 	DRAW_PIXELS ENDP
