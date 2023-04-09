@@ -17,8 +17,7 @@ DATA segment para 'DATA'
     
     Y_Ball_Velocity DW 04H
     
-    SCORE DW 0H
-    
+    SCORE DW 00H
     MAX_HEIGHT DW 0A0h
 	
     ball_move_time dw  05h
@@ -112,9 +111,9 @@ code segment para 'CODE'
         CALL ENEMY_HITTING
         call CHECK_SCORE        
         call Check_Position
-		CALL DRAW_BALL
-		
+		CALL DRAW_BALL		
 		jmp CHECK_TIME
+
 
 	Ball_up endp
 
@@ -123,14 +122,21 @@ code segment para 'CODE'
         mov dx , BALL_Y
         cmp dx , 09h               ;* IF Reach the top of the page reset the position of the ball     
         jle Reset_Camera
-        ; dec BALL_Y
         ret
 
     Check_Position endp
 
     Reset_Camera proc near
-        ; mov ax , 0A0H
         mov BALL_Y, 0A0H
+        mov CURRENT_LOCATION_Y,0A0h
+        mov current_location_x,0A0h
+        call GENERATE_initial_X
+        call GENERATE_initial_Y
+        call GENERATE_F_X
+        call GENERATE_F_Y
+        call GENERATE_S_X
+        call GENERATE_S_Y
+        mov MAX_HEIGHT,0A0H
         ret
     Reset_Camera ENDP
 
@@ -144,7 +150,12 @@ code segment para 'CODE'
     CHECK_SCORE ENDP
 
     UPDATE_SCORE PROC NEAR
+        ; MOV ax , MAX_HEIGHT  ; Farest point from initial ( point = 0A0H )
+        sub cx,bx
+        ; mov cx,score
+        add score ,cx
         MOV MAX_HEIGHT,bx
+
         RET
     UPDATE_SCORE ENDP
 
@@ -393,11 +404,6 @@ GO_RIGHT ENDP
 
 PRINT_SCORE proc near;print Score
 
-        ; mov dx, 0f28h
-        ; mov bh, 0      ; Page=0
-        ; mov ah, 02h    ; BIOS.SetCursorPosition
-        ; int 10h
-
         mov bx, 000Fh
         mov     ah, 0eh
         mov     al, "S"
@@ -452,16 +458,12 @@ DIVIDE_NUMBER_FOR_PRINT PROC NEAR ;print the score digit by digit
  MOV CX,0
  MOV BX,0AH        ;bx=10 for dividing
  
- MOV ax , MAX_HEIGHT 
- mov cx ,0A0h
- sub cx ,ax
- mov ax ,cx ; AX= SCORE
- mov cx ,0
+ 
+ mov ax,score 
 ;  mov bx,score
 ;  add bx,ax
-
- mov SCORE, ax
-    ; mov ax,CURRENT_LOCATION_Y
+;  mov ax,bx
+;  mov SCORE, bx
   DIVIDER:
      DIV BL    
      INC CX 
