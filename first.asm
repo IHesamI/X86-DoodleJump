@@ -37,7 +37,6 @@ DATA segment para 'DATA'
 	
 	BROKEN_LAYER_WIDTH DW 012h
 	
-
 	Initial_LAYER_WIDTH DW 018h
 
     LY_F_X DW 0Ah
@@ -53,6 +52,13 @@ DATA segment para 'DATA'
     Target_Layer_X dw 00h
     Target_Layer_Y dw 00h
     TEMP_Ball_X_ dw 00h
+    
+    coil_x dw 0A0h 
+    coil_y dw 080h 
+
+    coil_width dw 02H
+    coil_height dw 0AH
+
 	
 	X DW 0h
 	Y DW 02h
@@ -110,6 +116,7 @@ code segment para 'CODE'
 
 ;! UP HANDLER{
 	Ball_up proc NEAR
+        ; mov Y_Ball_Velocity , 05H
         mov AX,Y_Ball_Velocity
         sub BALL_Y,AX
         call KEYBOARD_CHECKER
@@ -162,14 +169,11 @@ code segment para 'CODE'
 
         RET
     UPDATE_SCORE ENDP
-
-
 ;! }
 
 
 Ball_down proc NEAR
-            ; BALL_X DW 0A0h                       ; current X position (column) of the ball
-        	; BALL_Y DW 0A0h                       ; current Y position (column) of the ball 
+        mov Y_Ball_Velocity , 04H
         mov AX,Y_Ball_Velocity
         add BALL_Y,AX
         Call GAME_OVER
@@ -184,12 +188,12 @@ Ball_down proc NEAR
 
 Ball_down endp
 
-    upadte_STages proc near
-        call check_initial
-        call check_layer_F
-        call check_layer_S
+upadte_STages proc near
+    call check_initial
+    call check_layer_F
+    call check_layer_S
     ret
-    upadte_STages endp
+upadte_STages endp
     
     check_initial proc near
         mov cx, current_location_Y
@@ -234,12 +238,6 @@ Ball_down endp
     update_layer_S endp
 
 
-; counter_zero proc near
-;        mov si , 0       
-;        jmp CHECK_TIME
-
-; counter_zero endp
-
 ENEMY_HITTING PROC NEAR
 
         mov cx,Enemy_X
@@ -270,6 +268,7 @@ ENEMY_HITTING PROC NEAR
             jl ENEMY_NOTHIT
             JMP EndGame
 ENEMY_HITTING ENDP
+
 ENEMY_NOTHIT PROC NEAR
     RET
 ENEMY_NOTHIT ENDP
@@ -393,7 +392,8 @@ HITTING_STAGES PROC NEAR
         call Hit_Stage_F
         ; check layer_S
         call Hit_Stage_S
-		
+		; check Coil_
+        call Hit_Coil
     ret
 HITTING_STAGES ENDP
 
@@ -424,6 +424,50 @@ X_HIT_CHECKER ENDP
 NOTHIT proc near
     ret
 NOTHIT endp
+
+Hit_Coil proc near
+        mov cx,coil_x
+        MOV Target_Layer_X , cx ; if the y of the ball and the layer is same we should check for x and need to store them in a temporarily variable
+        mov cx,BALL_X
+        MOV TEMP_Ball_X_ , cx
+        mov cx ,coil_y
+        mov Target_Layer_Y,cx
+        mov dx ,BALL_Y
+        sub cx,dx
+        cmp cx,03h
+        JlE X_HIT_CHECKER_coil
+        ret
+
+        X_HIT_CHECKER_coil:
+        ; check if the x is in layer hit the layer and go up 
+            MOV cx , TEMP_Ball_X_ 
+            mov dx , Target_Layer_X
+            add dx, coil_width
+            CMP cx,dx
+            jg NOTHIT
+            add cx , BALL_SIZE
+            mov dx , Target_Layer_X
+            CMP cx,dx
+            jl NOTHIT
+            mov si ,0
+            jmp upadte_velocity
+
+Hit_Coil endp
+
+
+upadte_velocity proc near
+        mov Y_Ball_Velocity , 05H
+    mov cx,Target_Layer_Y
+    mov CURRENT_LOCATION_Y,cx
+    mov BALL_Y,cx
+
+    mov cx , Target_Layer_X
+    mov current_location_x,cx
+        call upadte_STages
+        ret
+upadte_velocity endp
+
+
 ;!  ]
 
 KEYBOARD_CHECKER PROC NEAR
@@ -523,7 +567,7 @@ DIVIDE_NUMBER_FOR_PRINT PROC NEAR ;print the score digit by digit
  
  
  mov ah,00h 
- mov al,score  ; Print
+ mov AX,SCORE  ; Print
 
   DIVIDER:
      DIV BL    
@@ -650,6 +694,32 @@ DRAW_BALL PROC NEAR
             SUB AX, LY_S_Y
             CMP AX, LAYER_HEIGHT
             jng DRAW_LAYER_S
+
+		MOV CX, coil_x
+		MOV DX, coil_y
+
+        ; coil_x dw 0A0h 
+        ; coil_y dw 0A0h 
+
+        ; coil_width dw 06H
+        ; coil_height dw 0AH
+		
+		DRAW_Coil:
+			MOV AH, 0Ch
+			MOV AL, 0Fh
+			MOV BH, 00h
+			INT 10h
+			INC CX
+            MOV AX, CX
+            SUB AX,coil_x
+            CMP AX,coil_width
+            jng DRAW_Coil
+			MOV cx , coil_x ;initial column 
+            INC DX
+            MOV AX, DX
+            SUB AX, coil_y
+            CMP AX, coil_height
+            jng DRAW_Coil
 			
 		MOV CX, BROKEN_LAYER_F_X
 		MOV DX, BROKEN_LAYER_F_Y
