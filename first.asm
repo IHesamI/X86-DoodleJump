@@ -30,8 +30,8 @@ DATA segment para 'DATA'
     Initial_LAYER_X DW 0A0h 
     Initial_LAYER_Y DW 0A0h 
 	
-	BROKEN_LAYER_F_X DW 1F0h
-	BROKEN_LAYER_F_Y DW 110h
+	BROKEN_LAYER_F_X DW 0F0h
+	BROKEN_LAYER_F_Y DW 20h
 
 	HOLE_WIDTH DW 15h
 	
@@ -60,6 +60,7 @@ DATA segment para 'DATA'
 	R DW 02h
 	
 	D DW  (?)
+    color_of_borken DB 0fh
 	
 Data ends
 
@@ -166,7 +167,7 @@ code segment para 'CODE'
 ;! }
 
 
-	Ball_down proc NEAR
+Ball_down proc NEAR
             ; BALL_X DW 0A0h                       ; current X position (column) of the ball
         	; BALL_Y DW 0A0h                       ; current Y position (column) of the ball 
         mov AX,Y_Ball_Velocity
@@ -175,12 +176,13 @@ code segment para 'CODE'
         call KEYBOARD_CHECKER
         CALL ENEMY_HITTING
         CALL HITTING_STAGES ;check for hitting the stages and reset the move style        
-		CALL DRAW_BALL
+		CALL Broken_Layer_HITTING
+        CALL DRAW_BALL
 		;CALL DRAW_CRCL
 
 		jmp CHECK_TIME
 
-	Ball_down endp
+Ball_down endp
 
     upadte_STages proc near
         call check_initial
@@ -267,12 +269,67 @@ ENEMY_HITTING PROC NEAR
             CMP cx,dx
             jl ENEMY_NOTHIT
             JMP EndGame
-
 ENEMY_HITTING ENDP
-
 ENEMY_NOTHIT PROC NEAR
     RET
 ENEMY_NOTHIT ENDP
+
+Broken_Layer_HITTING PROC NEAR
+		MOV CX , BROKEN_LAYER_F_X
+        MOV Target_Layer_X , cx ; if the y of the ball and the layer is same we should check for x and need to store them in a temporarily variable
+        mov cx,BALL_X
+        MOV TEMP_Ball_X_ , cx
+
+        mov cx ,BROKEN_LAYER_F_Y ; cx=32
+        mov dx ,BALL_Y ; dx=160
+
+        sub  dx, cx 
+        cmp dx , 8
+        JlE X_HIT_CHECKER_Broken_Layer_Before_Hole
+        RET
+
+        X_HIT_CHECKER_Broken_Layer_Before_Hole:
+            MOV cx , TEMP_Ball_X_  ; cx = ball_x
+            mov dx , Target_Layer_X ; dx= layer_x
+            add dx, BROKEN_LAYER_WIDTH ; dx =  layer_x + width
+            CMP cx,dx   ; 
+            jg X_HIT_CHECKER_Broken_Layer_after_hole
+            add cx , BALL_SIZE
+            mov dx , Target_Layer_X
+            CMP cx,dx
+            jl X_HIT_CHECKER_Broken_Layer_after_hole
+            JMP Hited_the_broken
+
+            X_HIT_CHECKER_Broken_Layer_after_hole:
+                
+                MOV CX, BROKEN_LAYER_F_X
+		        ADD CX, HOLE_WIDTH
+                add cx,BROKEN_LAYER_WIDTH
+                MOV Target_Layer_X , cx ; if the y of the ball and the layer is same we should check for x and need to store them in a temporarily variable
+                mov cx,BALL_X
+                MOV TEMP_Ball_X_ , cx
+                MOV cx , TEMP_Ball_X_ 
+                mov dx , Target_Layer_X
+                add dx, BROKEN_LAYER_WIDTH
+                CMP cx,dx
+                jg Not_Hit_the_broken
+                add cx , BALL_SIZE
+                mov dx , Target_Layer_X
+                CMP cx,dx
+                jl Not_Hit_the_broken
+                JMP Hited_the_broken
+
+Broken_Layer_HITTING ENDP
+
+Not_Hit_the_broken PROC NEAR
+    RET
+Not_Hit_the_broken ENDP
+
+Hited_the_broken PROC NEAR
+    mov color_of_borken , 00h
+    ret    
+Hited_the_broken ENDP
+
 
 ; ! this procecss is the responsible of hitting action[
 	
@@ -465,11 +522,9 @@ DIVIDE_NUMBER_FOR_PRINT PROC NEAR ;print the score digit by digit
  MOV BX,0AH        ;bx=10 for dividing
  
  
- mov ax,score 
-;  mov bx,score
-;  add bx,ax
-;  mov ax,bx
-;  mov SCORE, bx
+ mov ah,00h 
+ mov al,score  ; Print
+
   DIVIDER:
      DIV BL    
      INC CX 
@@ -601,7 +656,7 @@ DRAW_BALL PROC NEAR
 		
 		DRAW_BROKEN_LAYER_F:
             mov ah , 0Ch
-            mov al , 0fh ; Set the color of pixel
+            mov al , color_of_borken ; Set the color of pixel
             mov bh , 00h
             int 10h
 			INC CX
@@ -623,7 +678,7 @@ DRAW_BALL PROC NEAR
 		
 		DRAW_BROKEN_LAYER_S:
             mov ah , 0Ch
-            mov al , 0fh ; Set the color of pixel
+            mov al , color_of_borken ; Set the color of pixel
             mov bh , 00h
             int 10h
 			INC CX
