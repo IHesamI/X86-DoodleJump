@@ -8,7 +8,6 @@ DATA segment para 'DATA'
     CURRENT_LOCATION_X DW 0A0H
     CURRENT_LOCATION_Y DW 0A0H
 
-
     TIME_AUX DB 0 ;
     
     BALL_X DW 0A0h                       ; current X position (column) of the ball
@@ -69,7 +68,7 @@ code segment para 'CODE'
         POP AX                               ;release the top item from the stack to the AX register
         mov ah ,0h
         int 10h            
-        ; TODO THIS MOV INSTRUCTIONS MUST GO INSIDE EACH PROCESS
+
         mov cx,Initial_LAYER_X
         mov CURRENT_LOCATION_X,cx
 
@@ -102,9 +101,6 @@ code segment para 'CODE'
 
 ;! UP HANDLER{
 	Ball_up proc NEAR
-
-		; TODO WHEN WE REACH CERTAIN HEIGHT THE CAMERA SHOULD MOVE
-		
         mov AX,Y_Ball_Velocity
         sub BALL_Y,AX
         call KEYBOARD_CHECKER
@@ -113,8 +109,6 @@ code segment para 'CODE'
         call Check_Position
 		CALL DRAW_BALL		
 		jmp CHECK_TIME
-
-
 	Ball_up endp
 
     Check_Position proc near
@@ -127,16 +121,17 @@ code segment para 'CODE'
     Check_Position endp
 
     Reset_Camera proc near
-        mov BALL_Y, 0A0H
-        mov CURRENT_LOCATION_Y,0A0h
-        mov current_location_x,0A0h
+        mov BALL_Y, 0B0H
+        mov CURRENT_LOCATION_Y,0B0h
+        mov ax,BALL_X
+        mov current_location_x,ax
         call GENERATE_initial_X
         call GENERATE_initial_Y
         call GENERATE_F_X
         call GENERATE_F_Y
         call GENERATE_S_X
         call GENERATE_S_Y
-        mov MAX_HEIGHT,0A0H
+        mov MAX_HEIGHT,0B0h
         ret
     Reset_Camera ENDP
 
@@ -702,6 +697,7 @@ DRAW_BALL ENDP
 		RET
 
 	GENERATE_S_Y ENDP 
+    
 	DRAW_CRCL PROC NEAR
 	
 		MOV X, 0h ; x = 0
