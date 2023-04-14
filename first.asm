@@ -30,6 +30,14 @@ DATA segment para 'DATA'
 
     Initial_LAYER_X DW 0A0h 
     Initial_LAYER_Y DW 0A0h 
+	
+	BROKEN_LAYER_F_X DW 1F0h
+	BROKEN_LAYER_F_Y DW 110h
+
+	HOLE_WIDTH DW 15h
+	
+	BROKEN_LAYER_WIDTH DW 012h
+	
 
 	Initial_LAYER_WIDTH DW 018h
 
@@ -272,6 +280,8 @@ ENEMY_NOTHIT PROC NEAR
 ENEMY_NOTHIT ENDP
 
 ; ! this procecss is the responsible of hitting action[
+	
+
 
 Hit_Stage_initial proc near 
         mov cx,Initial_LAYER_X
@@ -331,6 +341,7 @@ HITTING_STAGES PROC NEAR
         call Hit_Stage_F
         ; check layer_S
         call Hit_Stage_S
+		
     ret
 HITTING_STAGES ENDP
 
@@ -590,6 +601,50 @@ DRAW_BALL PROC NEAR
             CMP AX, LAYER_HEIGHT
             jng DRAW_LAYER_S
 			
+		MOV CX, BROKEN_LAYER_F_X
+		MOV DX, BROKEN_LAYER_F_Y
+		
+		DRAW_BROKEN_LAYER_F:
+            mov ah , 0Ch
+            mov al , 0fh ; Set the color of pixel
+            mov bh , 00h
+            int 10h
+			INC CX
+            MOV AX, CX
+            SUB AX,BROKEN_LAYER_F_X
+            CMP AX,BROKEN_LAYER_WIDTH
+            JNG DRAW_BROKEN_LAYER_F
+			MOV cx , BROKEN_LAYER_F_X ;initial column 
+            INC DX
+            MOV AX, DX
+            SUB AX, BROKEN_LAYER_F_Y
+            CMP AX, LAYER_HEIGHT
+            JNG DRAW_BROKEN_LAYER_F
+		
+		
+		MOV CX, BROKEN_LAYER_F_X
+		ADD CX, HOLE_WIDTH
+		MOV DX, BROKEN_LAYER_F_Y
+		
+		DRAW_BROKEN_LAYER_S:
+            mov ah , 0Ch
+            mov al , 0fh ; Set the color of pixel
+            mov bh , 00h
+            int 10h
+			INC CX
+            MOV AX, CX
+            SUB AX,BROKEN_LAYER_F_X
+			SUB AX, HOLE_WIDTH
+            CMP AX,BROKEN_LAYER_WIDTH
+            JNG DRAW_BROKEN_LAYER_S
+			MOV cx , BROKEN_LAYER_F_X ;initial column 
+			ADD CX, HOLE_WIDTH
+            INC DX
+            MOV AX, DX
+            SUB AX, BROKEN_LAYER_F_Y
+            CMP AX, LAYER_HEIGHT
+            JNG DRAW_BROKEN_LAYER_S
+		
         CALL DRAW_CRCL
 		ret
 DRAW_BALL ENDP
@@ -880,6 +935,7 @@ DRAW_BALL ENDP
 		int 10h
 		RET
 	DRAW_PIXELS ENDP
+	
 	
 code ends
 end
